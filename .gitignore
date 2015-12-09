@@ -32,15 +32,14 @@ Settings.settings
 
 # —áŠOƒŠƒXƒg
 
-!/*
-!Config/
-!Content/
-!Resource/
-!Source/
+!Config/*
+!Content/*
+!Resource/*
+!Source/*
 
-!Plugins/*/Resource/
-!Plugins/*/Source/
-!Plugins/*/ThirdParty/
+!Plugins/*/Resource/*
+!Plugins/*/Source/*
+!Plugins/*/ThirdParty/*
 !Plugins/*/*.uplugin
 
 !Tool/*/*.h
@@ -48,9 +47,9 @@ Settings.settings
 !Tool/*/*.cpp
 !Tool/*/*.c
 !Tool/*/*.vcxproj
-!Tool/*/*/include/
-!Tool/*/*/lib/
-!Tool/*/*/DLL/
+!Tool/*/*/include/*
+!Tool/*/*/lib/*
+!Tool/*/*/DLL/*
 !Tool/*.sln
 
 # C/C++ source files
