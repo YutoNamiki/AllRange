@@ -62,12 +62,6 @@ Settings.settings
 !*.hpp
 !*.inl
 !*.inc
-!*.m
-!*.mm
-!*.rc
-!*.def
-!*.exp
-!*.manifest
 !*.lib
 !*.dll
 
