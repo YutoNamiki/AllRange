@@ -21,6 +21,7 @@ Tool/*
 *.vcxproj
 *.vcxproj.filters
 *.sln
+*.sdf
 *.xcodeproj
 *.xcconfig
 *.vsprops
@@ -41,15 +42,15 @@ Settings.settings
 !Plugins/*/ThirdParty/*
 !Plugins/*/*.uplugin
 
-!Tool/*/*.h
-!Tool/*/*.hpp
-!Tool/*/*.cpp
-!Tool/*/*.c
-!Tool/*/*.vcxproj
-!Tool/*/*/include/*
-!Tool/*/*/lib/*
+!Tool/*/*/*.h
+!Tool/*/*/*.hpp
+!Tool/*/*/*.cpp
+!Tool/*/*/*.c
+!Tool/*/*/*.vcxproj
+!Tool/*/*/Include/*
+!Tool/*/*/Lib/*
 !Tool/*/*/DLL/*
-!Tool/*.sln
+!Tool/*/*.sln
 
 # C/C++ source files
 !*.c
