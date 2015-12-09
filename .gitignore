@@ -20,6 +20,7 @@ Saved/
 *.vcxproj.filters
 *.sln
 *.sdf
+*.opensdf
 *.xcodeproj
 *.xcconfig
 *.vsprops
