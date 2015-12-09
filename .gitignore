@@ -7,9 +7,9 @@ Binaries/
 Build/
 Debug/
 Intermediate/
-Plugins/*
+Plugins/
 Saved/
-Tool/*
+Tool/
 
 # Projects and makefiles
 *.cmake
