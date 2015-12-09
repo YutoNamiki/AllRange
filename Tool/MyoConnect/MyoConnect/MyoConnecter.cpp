@@ -2,6 +2,7 @@
 #include <iostream>
 #include <conio.h>
 #include <Windows.h>
+#include "DataCollector.h"
 #include "UDPSocket.h"
 
 #pragma comment(lib, "kernel32.lib")
@@ -10,17 +11,22 @@ const std::string MyoConnecter::LogString = std::string("MyoConnect: ");
 const std::string MyoConnecter::ErrorString = std::string("Error: ");
 
 MyoConnecter::MyoConnecter()
+	: hub("com.tool.MyoConnect")
 {
-	udpSocket = new UDPSocket();
+	
 }
 
 MyoConnecter::~MyoConnecter()
 {
 	delete udpSocket;
+	delete collector;
 }
 
 bool MyoConnecter::Initializer()
 {
+	collector = new DataCollector();
+
+	udpSocket = new UDPSocket();
 	if (!udpSocket->Initialize())
 		return false;
 
