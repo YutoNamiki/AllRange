@@ -1,0 +1,22 @@
+{
+	"FileVersion" : 3,
+	
+	"FriendlyName" : "WiiRemote Plugin",
+	"Version" : 1,
+	"VersionName" : "1.0",
+	"CreatedBy" : "Epic Games, Inc.",
+	"CreatedByURL" : "http://epicgames.com",
+	"EngineVersion" : "4.2.0",
+	"Description" : "This is the plugin to controll WiiRemote and Wii devices.",
+  "Category" : "InputDevice",
+	"EnabledByDefault" : true,
+	
+	"Modules" :
+	[
+		{
+			"Name" : "WiiRemotePlugin",
+      "Type": "Developer",
+      "LoadingPhase": "PreDefault"
+		}
+	]
+}
