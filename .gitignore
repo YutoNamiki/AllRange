@@ -7,7 +7,14 @@ Binaries/
 Build/
 Debug/
 Intermediate/
+Plugins/*/Binaries/
+Plugins/*/Intermediate/
 Saved/
+Tool/*/.vs/
+Tool/*/*/x64/
+Tool/*/ipch/
+Tool/*/Debug/
+Tool/*/Release/
 
 # Projects and makefiles
 *.cmake
@@ -55,8 +62,10 @@ Settings.settings
 !Tool/*/*/*.c
 !Tool/*/*/*.vcxproj
 !Tool/*/x64/Debug/*.dll
-!Tool/*/x64/Debuf/*.exe
+!Tool/*/x64/Debug/*.lib
+!Tool/*/x64/Debug/*.exe
 !Tool/*/x64/Release/*.dll
+!Tool/*/x64/Release/*.lib
 !Tool/*/x64/Release/*.exe
 !Tool/*/*/Include/*
 !Tool/*/*/Lib/*
