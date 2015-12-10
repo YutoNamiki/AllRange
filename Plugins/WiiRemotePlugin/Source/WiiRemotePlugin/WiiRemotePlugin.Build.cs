@@ -1,22 +1,33 @@
 // Copyright 1998-2015 Epic Games, Inc. All Rights Reserved.
+using System.IO;
 
 namespace UnrealBuildTool.Rules
 {
 	public class WiiRemotePlugin : ModuleRules
 	{
-		public WiiRemotePlugin(TargetInfo Target)
+        private string ModulePath
+        {
+            get { return Path.GetDirectoryName(RulesCompiler.GetModuleFilename(this.GetType().Name)); }
+        }
+
+        private string ThirdPartyPath
+        {
+            get { return Path.GetFullPath(Path.Combine(ModulePath, "../../ThirdParty/")); }
+        }
+
+        public WiiRemotePlugin(TargetInfo Target)
 		{
 			PublicIncludePaths.AddRange(
 				new string[] {
                     "WiiRemotePlugin/Public",
-					// ... add public include paths required here ...
+					"WiiRemotePlugin/Classes",
 				}
 				);
 
-			PrivateIncludePaths.AddRange(
-				new string[] {
+            PrivateIncludePaths.AddRange(
+                new string[] {
                     "WiiRemotePlugin/Private",
-					// ... add other private include paths required here ...
+                    Path.Combine(ThirdPartyPath, "Include"),
 				}
 				);
 
@@ -25,23 +36,41 @@ namespace UnrealBuildTool.Rules
 				{
 					"Core",
 					"CoreUObject",
-					// ... add other public dependencies that you statically link with here ...
+					"Engine",
+                    "InputCore",
+                    "Slate",
+                    "SlateCore",
 				}
 				);
 
 			PrivateDependencyModuleNames.AddRange(
 				new string[]
 				{
-					// ... add private dependencies that you statically link with here ...
+					
 				}
 				);
 
 			DynamicallyLoadedModuleNames.AddRange(
 				new string[]
 				{
-					// ... add any modules that your module loads dynamically here ...
+					
 				}
 				);
 		}
-	}
+
+        public bool LoadWiiRemoteLib(TargetInfo Target)
+        {
+            bool isLibrarySupported = false;
+            if ((Target.Platform == UnrealTargetPlatform.Win64) || (Target.Platform == UnrealTargetPlatform.Win32))
+            {
+                isLibrarySupported = true;
+                string LibrariesPath = Path.Combine(ThirdPartyPath, "Lib");
+                PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "WiiRemoteLibrary.lib"));
+            }
+            if (isLibrarySupported)
+                PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "Include"));
+            Definitions.Add(string.Format("WITH_WIIREMOTE_BINDING={0}", isLibrarySupported ? 1 : 0));
+            return isLibrarySupported;
+        }
+    }
 }

@@ -4,10 +4,6 @@
 
 #include "MyoPluginObject.generated.h"
 
-
-/**
- * Example UStruct declared in a plugin module
- */
 USTRUCT()
 struct FMyoPluginStruct
 {
@@ -16,11 +12,7 @@ struct FMyoPluginStruct
 	UPROPERTY()
 	FString TestString;
 };
- 
 
-/**
- * Example of declaring a UObject in a plugin module
- */
 UCLASS()
 class MYOPLUGIN_API UMyoPluginObject : public UObject
 {
@@ -34,5 +26,3 @@ private:
 	FMyoPluginStruct MyStruct;
 
 };
-
-

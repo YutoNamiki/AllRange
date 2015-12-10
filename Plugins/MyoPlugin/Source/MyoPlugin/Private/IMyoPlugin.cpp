@@ -1,33 +1,56 @@
 // Copyright 1998-2015 Epic Games, Inc. All Rights Reserved.
 
 #include "MyoPluginPrivatePCH.h"
-
 #include "MyoPluginObject.h"
-
-
+#include "Networking.h"
+#include "Sockets.h"
+#include "SocketSubsystem.h"
 
 class FMyoPlugin : public IMyoPlugin
 {
-	/** IModuleInterface implementation */
+public:
+	FString MyoDriverIP = "192.168.10.5";
+	FIPv4Address MyoDirverIPAddress;
+	FSocket* Socket;
+	FUdpSocketReceiver* Receiver;
+
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+	void ReceivePacket();
+	void SendPacket();
 };
 
 IMPLEMENT_MODULE(FMyoPlugin, MyoPlugin )
 
-
-
 void FMyoPlugin::StartupModule()
 {
-	// This code will execute after your module is loaded into memory (but after global variables are initialized, of course.)
+	FIPv4Address::Parse(MyoDriverIP, MyoDirverIPAddress);
+	Socket = FUdpSocketBuilder(TEXT("MyoUDPSocket")).BoundToAddress(MyoDirverIPAddress).BoundToPort(8000).Build();
+	//Receiver = new FUdpSocketReceiver(Socket, FTimespan(0, 1, 0), TEXT("MyoUDPReceiver"));
+	uint32 pendingData;
+	if (Socket->HasPendingData(pendingData))
+	{
+		uint8* recv = new uint8[pendingData];
+		int32 bytesRead;
+		TSharedRef<FInternetAddr> targetAddr = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
+		Socket->RecvFrom(recv, pendingData, bytesRead, *targetAddr);
+		auto character = (char*)recv;
+		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString(character));
+	}
 }
-
 
 void FMyoPlugin::ShutdownModule()
 {
-	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
-	// we call this function before unloading the module.
+	delete Receiver;
+	Socket->Close();
 }
 
+void FMyoPlugin::ReceivePacket()
+{
 
+}
 
+void FMyoPlugin::SendPacket()
+{
+
+}
