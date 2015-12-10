@@ -4,10 +4,13 @@
 
 class UDPSocket;
 class DataCollector;
+
 namespace myo
 {
 	class Hub;
 	class Myo;
+	template <typename T> class Quaternion;
+	template <typename T> class Vector3;
 }
 
 class MyoConnecter
@@ -22,6 +25,7 @@ private:
 	DataCollector* collector;
 	myo::Hub* hub;
 	
+	static const int FPS = 90;
 	static const std::string LogString;
 	static const std::string ErrorString;
 
@@ -29,5 +33,5 @@ private:
 	bool Update();
 
 	bool GetInputEscapeKey();
-	static void SetMessage(myo::Myo* sendMyo, DataCollector& collector, int* message);
+	static void SetMessage(myo::Myo* sendMyo, DataCollector& collector, char* message);
 };

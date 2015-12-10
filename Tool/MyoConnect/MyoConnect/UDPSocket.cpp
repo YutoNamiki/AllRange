@@ -1,10 +1,7 @@
-#include "UDPSocket.h"
-#include <WinSock2.h>
-#include <WS2tcpip.h>
-#include <iostream>
+#define WIN32_LEAN_AND_MEAN
 
-#pragma comment(lib, "wsock32.lib")
-#pragma comment(lib, "Ws2_32.lib")
+#include "UDPSocket.h"
+#include <WS2tcpip.h>
 
 const std::string UDPSocket::LogString = std::string("UDPSocket: ");
 const std::string UDPSocket::ErrorString = std::string("Error: ");
@@ -12,16 +9,16 @@ const std::string UDPSocket::ErrorString = std::string("Error: ");
 UDPSocket::UDPSocket()
 {
 	winSocketApiData = new WSAData();
-	addressIn = new sockaddr_in();
-	from = new sockaddr_in();
+	AddressIn = new sockaddr_in();
+	From = new sockaddr_in();
 }
 
 UDPSocket::~UDPSocket()
 {
-	CloseSocket(sock);
+	CloseSocket(Sock);
 	WindowSocketAPICleanup();
-	delete from;
-	delete addressIn;
+	delete From;
+	delete AddressIn;
 	delete winSocketApiData;
 	std::cout << LogString << "アプリケーションを終了します。" << std::endl;
 }
@@ -30,22 +27,33 @@ bool UDPSocket::Initialize()
 {
 	if (!WindowSocketAPIStartup(*winSocketApiData))
 		return false;
-	if (!CreateSocket(sock))
+	if (!CreateSocket(Sock))
 		return false;
 	char ipv4Buffer[256];
 	std::cout << "使用するPCのIPv4アドレスを入力してください。(***.***.***.***)：";
 	std::cin >> ipv4Buffer;
-	if (!BindSocket(sock, *addressIn, ipv4Buffer))
+	if (!BindSocket(Sock, *AddressIn, ipv4Buffer))
 	{
 		char portBuffer[256];
 		std::cout << LogString << ErrorString << "ポート番号8000でのソケットのバインドに失敗しました。" << std::endl;
 		std::cout << "8000番以外で使用するポート番号を入力してください：";
 		std::cin >> portBuffer;
-		if (!BindSocket(sock, *addressIn, ipv4Buffer, atoi(portBuffer)))
+		if (!BindSocket(Sock, *AddressIn, ipv4Buffer, atoi(portBuffer)))
 			return false;
 	}
 
 	return true;
+}
+
+void UDPSocket::SendMessageTo(SOCKET& sock, char* buffer, size_t bufferSize, sockaddr_in& addressIn)
+{
+	auto result = sendto(sock, buffer, static_cast<int>(bufferSize), 0, reinterpret_cast<sockaddr*>(&addressIn), static_cast<int>(sizeof(addressIn)));
+	if (result == SOCKET_ERROR)
+	{
+		std::cout << LogString << ErrorString << "キャリブレーション情報の送信に失敗しました。" << std::endl;
+		return;
+	}
+	//std::cout << LogString << "キャリブレーション情報を送信しました。" << std::endl;
 }
 
 bool UDPSocket::WindowSocketAPIStartup(WSAData& winSocketAPIData)
@@ -59,7 +67,7 @@ bool UDPSocket::WindowSocketAPIStartup(WSAData& winSocketAPIData)
 	return true;
 }
 
-bool UDPSocket::CreateSocket(unsigned long long& sock)
+bool UDPSocket::CreateSocket(SOCKET& sock)
 {
 	sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock < 0)
@@ -71,7 +79,7 @@ bool UDPSocket::CreateSocket(unsigned long long& sock)
 	return true;
 }
 
-bool UDPSocket::BindSocket(unsigned long long& sock, sockaddr_in& addressIn, const char* ipv4Address, const int port)
+bool UDPSocket::BindSocket(SOCKET& sock, sockaddr_in& addressIn, const char* ipv4Address, const int port)
 {
 	memset(&addressIn, 0, sizeof(addressIn));
 	addressIn.sin_port = htons(port);
@@ -86,7 +94,7 @@ bool UDPSocket::BindSocket(unsigned long long& sock, sockaddr_in& addressIn, con
 	return true;
 }
 
-void UDPSocket::CloseSocket(unsigned long long& sock)
+void UDPSocket::CloseSocket(SOCKET& sock)
 {
 	closesocket(sock);
 	std::cout << LogString << "ソケットをクローズしました。" << std::endl;
@@ -96,16 +104,4 @@ void UDPSocket::WindowSocketAPICleanup()
 {
 	WSACleanup();
 	std::cout << LogString << "WinSocketAPIをクリーンアップしました。" << std::endl;
-}
-
-template<typename T>
-void UDPSocket::SendMessageTo(const unsigned long long& sock, T* buffer, size_t bufferSize, sockaddr_in addressIn)
-{
-	auto result = sendto(sock, buffer, static_cast<int>(bufferSize), 0, reinterpret_cast<LPSOCKADDR>(&addressIn), static_cast<int>(sizeof(addressIn)));
-	if (result != static_cast<int>(strlen(buffer) + 1))
-	{
-		std::cout << LogString << ErrorString << "キャリブレーション情報の送信に失敗しました。" << std::endl;
-		return;
-	}
-	std::cout << LogString << "キャリブレーション情報を送信しました。" << std::endl;
 }

@@ -38,6 +38,7 @@ bool MyoConnecter::Initializer()
 	myo->setStreamEmg(myo::Myo::streamEmgEnabled);
 	collector->KnownMyos.push_back(myo);
 	collector->MyoInfos.push_back(MyoInformation());
+	collector->MyoInfos[0].MyoPtr = myo;
 	collector->MyoInfos[0].OnPair = true;
 	if (!udpSocket->Initialize())
 		return false;
@@ -50,12 +51,13 @@ bool MyoConnecter::Update()
 	if (GetInputEscapeKey())
 		return false;
 
-	hub->run(1000 / 20);
+	hub->run(1000 / FPS);
 	for (auto knownMyo : collector->KnownMyos)
 	{
-		collector->PrintData(collector->MyoInfos[collector->IdentifyMyo(knownMyo)]);
-		int message[256];
+		//collector->PrintData(collector->MyoInfos[collector->IdentifyMyo(knownMyo)]);
+		char message[80] = { 0 };
 		SetMessage(knownMyo, *collector, message);
+		UDPSocket::SendMessageTo(udpSocket->Sock, message, sizeof(message), *(udpSocket->AddressIn));
 	}
 	return true;
 }
@@ -74,41 +76,11 @@ bool MyoConnecter::GetInputEscapeKey()
 	return false;
 }
 
-void MyoConnecter::SetMessage(myo::Myo* sendMyo, DataCollector& collector, int* message)
+void MyoConnecter::SetMessage(myo::Myo* sendMyo, DataCollector& collector, char* message)
 {
 	auto myo = collector.MyoInfos[collector.IdentifyMyo(sendMyo)];
-	/* ビットは下位からシフト
-	[0]: 4 Byte - Myo Pointer
-	[1]: 4 Byte - Rotation X
-	[2]: 4 Byte - Rotation Y
-	[3]: 4 Byte - Rotation Z
-	[4]: 4 Byte - Rotation W
-	[5]: 4 Byte - Acceleration X
-	[6]: 4 Byte - Acceleration Y
-	[7]: 4 Byte - Acceleration Z
-	[8]: 4 Byte - Gyro X
-	[9]: 4 Byte - Gyro Y
-	[10]: 4 Byte - Gyro Z
-	[11]: 1 Byte - Emg[0]
-		  1 Byte - Emg[1]
-		  1 Byte - Emg[2]
-		  1 Byte - Emg[3]
-	[12]: 1 Byte - Emg[4]
-		  1 Byte - Emg[5]
-		  1 Byte - Emg[6]
-		  1 Byte - Emg[7]
-	[13]: 1 Bit - OnPair (0:false, 1:true)
-		  1 Bit - OnConnect (0:false, 1:true)
-	      1 Bit - OnArmSync (0:false, 1:true)
-		  1 Bit - OnLock (0:false, 1:true)
-		  2 Bit - WhichArm (0:right, 1:left, 2:unknown)
-		  2 Bit - ArmDirection (0:wrist, 1:elbow, 2:unknown)
-		  3 Bit - Pose(0:rest, 1:fist, 2:waveIn, 3:waveOut, 4:fingersSpread, 5:doubleTap, 6:unknown)
-	*/
-	std::cout << LogString << "Myo Ptr: " << std::hex << sendMyo << std::dec << std::endl;
-	message[0] = reinterpret_cast<int>(sendMyo);
-	auto address = reinterpret_cast<myo::Myo*>(message[0]);
-	std::cout << LogString << "Myo Ptr: " << std::hex << address << std::dec << std::endl;
+	//std::cout << LogString << "SIZE: " << sizeof(myo) << std::endl;
+	memcpy_s(message, sizeof(myo), &myo, sizeof(myo));
 }
 
 void MyoConnecter::Run()

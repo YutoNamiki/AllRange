@@ -8,17 +8,18 @@
 
 struct MyoInformation
 {
-	bool OnPair;
-	bool OnConnect;
-	bool OnArmSync;
-	bool OnLock;
-	myo::Arm WhichArm;
-	myo::XDirection ArmDirection;
-	myo::Pose Pose;
+	myo::Myo* MyoPtr;
 	myo::Quaternion<float> Rotation;
 	myo::Vector3<float> Acceleration;
 	myo::Vector3<float> Gyro;
 	std::array<int8_t, 8> Emg;
+	myo::Pose::Type Pose;
+	bool OnPair : 1;
+	bool OnConnect : 1;
+	bool OnArmSync : 1;
+	bool OnLock : 1;
+	myo::Arm WhichArm : 2;
+	myo::XDirection ArmDirection : 2;
 
 	MyoInformation();
 };

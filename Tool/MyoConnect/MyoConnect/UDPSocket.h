@@ -1,36 +1,35 @@
 #pragma once
 
+#include <iostream>
 #include <string>
+#include <WinSock2.h>
 
-struct WSAData;
-struct sockaddr_in; 
+#pragma comment(lib, "wsock32.lib")
+#pragma comment(lib, "Ws2_32.lib")
 
 class UDPSocket
 {
 public:
+	SOCKET Sock;
+	sockaddr_in* AddressIn;
+	sockaddr_in* From;
+
 	UDPSocket();
 	~UDPSocket();
 	bool Initialize();
+	static void SendMessageTo(SOCKET& sock, char* buffer, size_t bufferSize, sockaddr_in& addressIn);
 
 private:
 	WSAData* winSocketApiData;
-	unsigned long long sock;
-	sockaddr_in* addressIn;
-	sockaddr_in* from;
-	char recieveBuffer[256];
-	char sendBuffer[256];
 
 	static const std::string LogString;
 	static const std::string ErrorString;
 
 	static bool WindowSocketAPIStartup(WSAData& winSocketAPIData);
-	static bool CreateSocket(unsigned long long& sock);
-	static bool BindSocket(unsigned long long& sock, sockaddr_in& addressIn, const char* ipv4Address, const int port = 8000);
-	
-	static void CloseSocket(unsigned long long& sock);
+	static bool CreateSocket(SOCKET& sock);
+	static bool BindSocket(SOCKET& sock, sockaddr_in& addressIn, const char* ipv4Address, const int port = 8000);
+	static void CloseSocket(SOCKET& sock);
 	static void WindowSocketAPICleanup();
 
-	template <typename T>
-	static void SendMessageTo(const unsigned long long& sock, T* buffer, size_t bufferSize, sockaddr_in addressIn);
-};
 
+};

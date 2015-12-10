@@ -4,7 +4,8 @@ const std::string DataCollector::LogString = std::string("DataCollector: ");
 const std::string DataCollector::ErrorString = std::string("Error: ");
 
 MyoInformation::MyoInformation()
-	: OnPair(false)
+	: MyoPtr(nullptr)
+	, OnPair(false)
 	, OnConnect(false)
 	, OnArmSync(false)
 	, OnLock(true)
@@ -57,6 +58,7 @@ void DataCollector::onPair(myo::Myo* myo, uint64_t timestamp, myo::FirmwareVersi
 	myo->setStreamEmg(myo::Myo::streamEmgEnabled);
 	KnownMyos.push_back(myo);
 	MyoInfos.push_back(MyoInformation());
+	MyoInfos[IdentifyMyo(myo)].MyoPtr = myo;
 	MyoInfos[IdentifyMyo(myo)].OnPair = true;
 }
 
@@ -114,7 +116,7 @@ void DataCollector::onLock(myo::Myo* myo, uint64_t timestamp)
 
 void DataCollector::onPose(myo::Myo* myo, uint64_t timestamp, myo::Pose pose)
 {
-	MyoInfos[IdentifyMyo(myo)].Pose = pose;
+	MyoInfos[IdentifyMyo(myo)].Pose = pose.type();
 }
 
 void DataCollector::onOrientationData(myo::Myo* myo, uint64_t timestamp, const myo::Quaternion<float>& rotation)
