@@ -1,13 +1,13 @@
 #pragma once
 
 #include <array>
+#include <vector>
 #include <myo/Myo.hpp>
 
 #pragma comment(lib, "myo64.lib")
 
-class DataCollector : public myo::DeviceListener
+struct MyoInformation
 {
-public:
 	bool OnPair;
 	bool OnConnect;
 	bool OnArmSync;
@@ -18,10 +18,21 @@ public:
 	myo::Quaternion<float> Rotation;
 	myo::Vector3<float> Acceleration;
 	myo::Vector3<float> Gyro;
-	std::array<uint8_t, 8> Emg;
+	std::array<int8_t, 8> Emg;
+
+	MyoInformation();
+};
+
+class DataCollector : public myo::DeviceListener
+{
+public:
+	std::vector<myo::Myo*> KnownMyos;
+	std::vector<MyoInformation> MyoInfos;
 
 	DataCollector();
 	~DataCollector();
+	int IdentifyMyo(myo::Myo* myo);
+	void PrintData(MyoInformation myo);
 
 	virtual void onPair(myo::Myo* myo, uint64_t timestamp, myo::FirmwareVersion firmwareVersion) override;
 	virtual void onUnpair(myo::Myo* myo, uint64_t timestamp) override;
@@ -39,4 +50,9 @@ public:
 	virtual void onBatteryLevelReceived(myo::Myo* myo, uint64_t timestamp, uint8_t level) override;
 	virtual void onEmgData(myo::Myo* myo, uint64_t timestamp, const int8_t* emg) override;
 	virtual void onWarmupCompleted(myo::Myo* myo, uint64_t timestamp, myo::WarmupResult warmupResult) override;
+
+private:
+	static const std::string LogString;
+	static const std::string ErrorString;
+
 };

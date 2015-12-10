@@ -26,7 +26,11 @@ private:
 	static bool WindowSocketAPIStartup(WSAData& winSocketAPIData);
 	static bool CreateSocket(unsigned long long& sock);
 	static bool BindSocket(unsigned long long& sock, sockaddr_in& addressIn, const char* ipv4Address, const int port = 8000);
+	
 	static void CloseSocket(unsigned long long& sock);
 	static void WindowSocketAPICleanup();
+
+	template <typename T>
+	static void SendMessageTo(const unsigned long long& sock, T* buffer, size_t bufferSize, sockaddr_in addressIn);
 };
 

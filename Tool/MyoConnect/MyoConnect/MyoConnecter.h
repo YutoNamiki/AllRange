@@ -1,10 +1,14 @@
 #pragma once
 
 #include <string>
-#include <myo/Myo.hpp>
 
 class UDPSocket;
 class DataCollector;
+namespace myo
+{
+	class Hub;
+	class Myo;
+}
 
 class MyoConnecter
 {
@@ -16,7 +20,7 @@ public:
 private:
 	UDPSocket* udpSocket;
 	DataCollector* collector;
-	myo::Hub hub;
+	myo::Hub* hub;
 	
 	static const std::string LogString;
 	static const std::string ErrorString;
@@ -25,4 +29,5 @@ private:
 	bool Update();
 
 	bool GetInputEscapeKey();
+	static void SetMessage(myo::Myo* sendMyo, DataCollector& collector, int* message);
 };

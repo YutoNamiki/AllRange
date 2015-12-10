@@ -97,3 +97,15 @@ void UDPSocket::WindowSocketAPICleanup()
 	WSACleanup();
 	std::cout << LogString << "WinSocketAPIをクリーンアップしました。" << std::endl;
 }
+
+template<typename T>
+void UDPSocket::SendMessageTo(const unsigned long long& sock, T* buffer, size_t bufferSize, sockaddr_in addressIn)
+{
+	auto result = sendto(sock, buffer, static_cast<int>(bufferSize), 0, reinterpret_cast<LPSOCKADDR>(&addressIn), static_cast<int>(sizeof(addressIn)));
+	if (result != static_cast<int>(strlen(buffer) + 1))
+	{
+		std::cout << LogString << ErrorString << "キャリブレーション情報の送信に失敗しました。" << std::endl;
+		return;
+	}
+	std::cout << LogString << "キャリブレーション情報を送信しました。" << std::endl;
+}

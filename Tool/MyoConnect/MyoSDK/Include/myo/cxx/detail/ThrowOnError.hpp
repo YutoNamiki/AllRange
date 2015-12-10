@@ -19,90 +19,54 @@
 
 namespace myo {
 
-	class ThrowOnError {
-	public:
-		ThrowOnError()
-			: _error()
-		{
-		}
+class ThrowOnError {
+public:
+    ThrowOnError()
+    : _error()
+    {
+    }
 
-		~ThrowOnError() LIBMYO_NOEXCEPT(false)
-		{
-			if (_error)
-			{
-				switch (libmyo_error_kind(_error)) {
-				case libmyo_error:
-				case libmyo_error_runtime:
-				{
-					std::runtime_error exception(libmyo_error_cstring(_error));
-					libmyo_free_error_details(_error);
-					break;
-				}
-				case libmyo_error_invalid_argument:
-				{
-					std::invalid_argument exception(libmyo_error_cstring(_error));
-					libmyo_free_error_details(_error);
-					break;
-				}
-				case libmyo_success:
-				{
-					break;
-				}
-				}
-			}
-		}
+    ~ThrowOnError() LIBMYO_NOEXCEPT(false)
+    {
+        if (_error)
+        {
+            switch (libmyo_error_kind(_error)) {
+            case libmyo_error:
+            case libmyo_error_runtime:
+            {
+                std::runtime_error exception(libmyo_error_cstring(_error));
+                libmyo_free_error_details(_error);
+               // throw exception;
+				break;
+            }
+            case libmyo_error_invalid_argument:
+            {
+                std::invalid_argument exception(libmyo_error_cstring(_error));
+                libmyo_free_error_details(_error);
+                //throw exception;
+				break;
+            }
+            case libmyo_success:
+            {
+                break;
+            }
+            }
+        }
+    }
 
-		operator libmyo_error_details_t*()
-		{
-			return &_error;
-		}
+    operator libmyo_error_details_t*()
+    {
+        return &_error;
+    }
 
-	private:
-		libmyo_error_details_t _error;
+private:
+    libmyo_error_details_t _error;
 
-		// Not implemented
-		ThrowOnError(const ThrowOnError&); // = delete;
-		ThrowOnError& operator=(const ThrowOnError&); // = delete;
-	};
+    // Not implemented
+    ThrowOnError(const ThrowOnError&); // = delete;
+    ThrowOnError& operator=(const ThrowOnError&); // = delete;
+};
 
 } //namespace libmyo
 
-class TrackOnError {
-public:
-	TrackOnError()
-		: _error()
-	{
-		//lastCallEndedInError = false;
-	}
-
-	~TrackOnError()
-	{
-		if (_error)
-		{
-			switch (libmyo_error_kind(_error)) {
-			case libmyo_error:
-			case libmyo_error_runtime:
-			{
-				break;
-			}
-			case libmyo_error_invalid_argument:
-			{
-				break;
-			}
-			case libmyo_success:
-			{
-				break;
-			}
-			}
-		}
-	}
-
-	operator libmyo_error_details_t*()
-	{
-		return &_error;
-	}
-	libmyo_error_details_t _error;
-
-private:
-};
 #endif // MYO_CXX_DETAIL_THROWONERROR_HPP
