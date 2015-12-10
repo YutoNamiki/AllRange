@@ -11,13 +11,13 @@ class UDPSocket
 {
 public:
 	SOCKET Sock;
-	sockaddr_in* AddressIn;
-	sockaddr_in* From;
+	sockaddr_in* Address;
 
 	UDPSocket();
 	~UDPSocket();
 	bool Initialize();
 	static void SendMessageTo(SOCKET& sock, char* buffer, size_t bufferSize, sockaddr_in& addressIn);
+	static void ReceiveMessageFrom(SOCKET& sock, char* buffer, size_t bufferSize, sockaddr_in& addressFrom);
 
 private:
 	WSAData* winSocketApiData;

@@ -1,20 +1,20 @@
 {
 	"FileVersion" : 3,
 	
-	"FriendlyName" : "WiiRemote Plugin",
+	"FriendlyName" : "Myo Plugin",
 	"Version" : 1,
 	"VersionName" : "1.0",
 	"CreatedBy" : "Epic Games, Inc.",
 	"CreatedByURL" : "http://epicgames.com",
 	"EngineVersion" : "4.2.0",
-	"Description" : "This is the plugin to controll WiiRemote and Wii devices.",
-  "Category" : "InputDevices",
-	"EnabledByDefault" : true,
+	"Description" : "This is the plugin to be able to controll Myo Armband",
+	"Category" : "InputDevices",
+  "EnabledByDefault": true,
 	
 	"Modules" :
 	[
 		{
-			"Name" : "WiiRemotePlugin",
+			"Name" : "MyoPlugin",
       "Type": "Developer",
       "LoadingPhase": "PreDefault"
 		}

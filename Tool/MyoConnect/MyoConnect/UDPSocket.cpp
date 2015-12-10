@@ -9,16 +9,14 @@ const std::string UDPSocket::ErrorString = std::string("Error: ");
 UDPSocket::UDPSocket()
 {
 	winSocketApiData = new WSAData();
-	AddressIn = new sockaddr_in();
-	From = new sockaddr_in();
+	Address = new sockaddr_in();
 }
 
 UDPSocket::~UDPSocket()
 {
 	CloseSocket(Sock);
 	WindowSocketAPICleanup();
-	delete From;
-	delete AddressIn;
+	delete Address;
 	delete winSocketApiData;
 	std::cout << LogString << "アプリケーションを終了します。" << std::endl;
 }
@@ -32,13 +30,13 @@ bool UDPSocket::Initialize()
 	char ipv4Buffer[256];
 	std::cout << "使用するPCのIPv4アドレスを入力してください。(***.***.***.***)：";
 	std::cin >> ipv4Buffer;
-	if (!BindSocket(Sock, *AddressIn, ipv4Buffer))
+	if (!BindSocket(Sock, *Address, ipv4Buffer))
 	{
 		char portBuffer[256];
 		std::cout << LogString << ErrorString << "ポート番号8000でのソケットのバインドに失敗しました。" << std::endl;
 		std::cout << "8000番以外で使用するポート番号を入力してください：";
 		std::cin >> portBuffer;
-		if (!BindSocket(Sock, *AddressIn, ipv4Buffer, atoi(portBuffer)))
+		if (!BindSocket(Sock, *Address, ipv4Buffer, atoi(portBuffer)))
 			return false;
 	}
 
@@ -54,6 +52,18 @@ void UDPSocket::SendMessageTo(SOCKET& sock, char* buffer, size_t bufferSize, soc
 		return;
 	}
 	//std::cout << LogString << "キャリブレーション情報を送信しました。" << std::endl;
+}
+
+void UDPSocket::ReceiveMessageFrom(SOCKET& sock, char* buffer, size_t bufferSize, sockaddr_in& addressFrom)
+{
+	auto fromSize = static_cast<int>(sizeof(addressFrom));
+	auto result = recvfrom(sock, buffer, static_cast<int>(bufferSize), 0, reinterpret_cast<sockaddr*>(&addressFrom), &fromSize);
+	if (result == SOCKET_ERROR)
+	{
+		std::cout << LogString << ErrorString << "アプリケーションからのパケットをロスしました。" << std::endl;
+		return;
+	}
+	std::cout << LogString << ErrorString << "アプリケーションからのパケットを取得しました。" << std::endl;
 }
 
 bool UDPSocket::WindowSocketAPIStartup(WSAData& winSocketAPIData)
@@ -79,13 +89,13 @@ bool UDPSocket::CreateSocket(SOCKET& sock)
 	return true;
 }
 
-bool UDPSocket::BindSocket(SOCKET& sock, sockaddr_in& addressIn, const char* ipv4Address, const int port)
+bool UDPSocket::BindSocket(SOCKET& sock, sockaddr_in& Address, const char* ipv4Address, const int port)
 {
-	memset(&addressIn, 0, sizeof(addressIn));
-	addressIn.sin_port = htons(port);
-	addressIn.sin_family = AF_INET;
-	inet_pton(AF_INET, ipv4Address, &(addressIn.sin_addr));
-	if (bind(sock, reinterpret_cast<LPSOCKADDR>(&addressIn), static_cast<int>(sizeof(addressIn))) == SOCKET_ERROR)
+	memset(&Address, 0, sizeof(Address));
+	Address.sin_port = htons(port);
+	Address.sin_family = AF_INET;
+	inet_pton(AF_INET, ipv4Address, &(Address.sin_addr));
+	if (bind(sock, reinterpret_cast<LPSOCKADDR>(&Address), static_cast<int>(sizeof(Address))) == SOCKET_ERROR)
 	{
 		std::cout << LogString << ErrorString << "ソケットのバインドに失敗しました。" << std::endl;
 		return false;

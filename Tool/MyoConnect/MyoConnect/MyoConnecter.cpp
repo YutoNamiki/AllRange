@@ -57,7 +57,10 @@ bool MyoConnecter::Update()
 		//collector->PrintData(collector->MyoInfos[collector->IdentifyMyo(knownMyo)]);
 		char message[80] = { 0 };
 		SetMessage(knownMyo, *collector, message);
-		UDPSocket::SendMessageTo(udpSocket->Sock, message, sizeof(message), *(udpSocket->AddressIn));
+		UDPSocket::SendMessageTo(udpSocket->Sock, message, sizeof(message), *(udpSocket->Address));
+		for (auto character : message)
+			character = 0;
+		UDPSocket::ReceiveMessageFrom(udpSocket->Sock, message, sizeof(message), *(udpSocket->Address));
 	}
 	return true;
 }
