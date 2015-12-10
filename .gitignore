@@ -19,11 +19,19 @@ Saved/
 *.vcxproj
 *.vcxproj.filters
 *.sln
+*.ipdb
+*.iobj
+*.pdb
+*.obj
+*.lastbuildstate
+*.log
+*.tlog
 *.sdf
 *.opensdf
 *.xcodeproj
 *.xcconfig
 *.vsprops
+*.vcxproj.user
 *.snippet
 Makefile
 Makefile.*
@@ -46,6 +54,10 @@ Settings.settings
 !Tool/*/*/*.cpp
 !Tool/*/*/*.c
 !Tool/*/*/*.vcxproj
+!Tool/*/x64/Debug/*.dll
+!Tool/*/x64/Debuf/*.exe
+!Tool/*/x64/Release/*.dll
+!Tool/*/x64/Release/*.exe
 !Tool/*/*/Include/*
 !Tool/*/*/Lib/*
 !Tool/*/*/DLL/*
@@ -113,7 +125,6 @@ Settings.settings
 !*.hdr
 
 # 3D files
-!*.obj
 !*.3ds
 !*.max
 !*.wrl
@@ -133,6 +144,8 @@ Settings.settings
 !*.ac
 !*.c3d
 !*.bvh
+!*.ma
+!*.mb
 
 # Other configuration and markup files
 !*.ini
