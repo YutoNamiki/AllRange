@@ -33,6 +33,11 @@ MyoConnecter::~MyoConnecter()
 
 bool MyoConnecter::Initializer()
 {
+	if (hub == nullptr)
+	{
+		std::cout << LogString << ErrorString << "hub‚Ì¶¬‚ÉŽ¸”s‚µ‚Ü‚µ‚½B" << std::endl;
+		return false;
+	}
 	hub->addListener(collector);
 	auto myo = hub->waitForMyo(10000);
 	myo->setStreamEmg(myo::Myo::streamEmgEnabled);
@@ -52,14 +57,10 @@ bool MyoConnecter::Update()
 		return false;
 
 	hub->run(1000 / FPS);
-	for (auto knownMyo : collector->KnownMyos)
+	for (auto myo : collector->MyoInfos)
 	{
-		//collector->PrintData(collector->MyoInfos[collector->IdentifyMyo(knownMyo)]);
-		char sendMessage[80] = { 0 };
-		char receiveMessage[80] = { 0 };
-		SetMessage(knownMyo, *collector, sendMessage);
-		UDPSocket::SendMessageTo(udpSocket->Sock, sendMessage, sizeof(sendMessage), *(udpSocket->Address));
-		UDPSocket::ReceiveMessageFrom(udpSocket->Sock, receiveMessage, sizeof(receiveMessage), *(udpSocket->Address));
+		udpSocket->SetSendMessage(myo);
+		//collector->PrintData(myo);
 	}
 	return true;
 }
@@ -72,17 +73,11 @@ bool MyoConnecter::GetInputEscapeKey()
 		if (key == 0x1b)
 		{
 			std::cout << LogString << "ESC‚ª‰Ÿ‚³‚ê‚Ü‚µ‚½B" << std::endl;
+			udpSocket->SetIsFinish(true);
 			return true;
 		}
 	}
 	return false;
-}
-
-void MyoConnecter::SetMessage(myo::Myo* sendMyo, DataCollector& collector, char* message)
-{
-	auto myo = collector.MyoInfos[collector.IdentifyMyo(sendMyo)];
-	//std::cout << LogString << "SIZE: " << sizeof(myo) << std::endl;
-	memcpy_s(message, sizeof(myo), &myo, sizeof(myo));
 }
 
 void MyoConnecter::Run()

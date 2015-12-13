@@ -33,5 +33,4 @@ private:
 	bool Update();
 
 	bool GetInputEscapeKey();
-	static void SetMessage(myo::Myo* sendMyo, DataCollector& collector, char* message);
 };

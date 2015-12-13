@@ -1,0 +1,77 @@
+
+<Input Packet>
+
+　MyoPtr - 8byte	AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-GGGG-HHHH-IIII-JJJJ-KKKK-LLLL-MMMMM-NNNN-OOOO-PPPP
+char[0]: OOOO-PPPP
+char[1]: MMMM-NNNN
+char[2]: KKKK-LLLL
+char[3]: IIII-JJJJ
+char[4]: GGGG-HHHH
+char[5]: EEEE-FFFF
+char[6]: CCCC-DDDD
+char[7]: AAAA-BBBB
+　RotationX - 4byte	AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-GGGG-HHHH
+char[8]: GGGG-HHHH
+char[9]: EEEE-FFFF
+char[10]: CCCC-DDDD
+char[11]: AAAA-BBBB
+　RotationY - 4byte	AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-GGGG-HHHH
+char[12]: GGGG-HHHH
+char[13]: EEEE-FFFF
+char[14]: CCCC-DDDD
+char[15]: AAAA-BBBB
+　RotationZ - 4byte	AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-GGGG-HHHH
+char[16]: GGGG-HHHH
+char[17]: EEEE-FFFF
+char[18]: CCCC-DDDD
+char[19]: AAAA-BBBB
+　RotationW - 4byte	AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-GGGG-HHHH
+char[20]: GGGG-HHHH
+char[21]: EEEE-FFFF
+char[22]: CCCC-DDDD
+char[23]: AAAA-BBBB
+　AccelerationX - 4byte	AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-GGGG-HHHH
+char[24]: GGGG-HHHH
+char[25]: EEEE-FFFF
+char[26]: CCCC-DDDD
+char[27]: AAAA-BBBB
+　AccelerationY - 4byte	AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-GGGG-HHHH
+char[28]: GGGG-HHHH
+char[29]: EEEE-FFFF
+char[30]: CCCC-DDDD
+char[31]: AAAA-BBBB
+　AccelerationZ - 4byte	AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-GGGG-HHHH
+char[32]: GGGG-HHHH
+char[33]: EEEE-FFFF
+char[34]: CCCC-DDDD
+char[35]: AAAA-BBBB
+　GyroX - 4byte		AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-GGGG-HHHH
+char[36]: GGGG-HHHH
+char[37]: EEEE-FFFF
+char[38]: CCCC-DDDD
+char[39]: AAAA-BBBB
+　GyroY - 4byte		AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-GGGG-HHHH
+char[40]: GGGG-HHHH
+char[41]: EEEE-FFFF
+char[42]: CCCC-DDDD
+char[43]: AAAA-BBBB
+　GyroZ - 4byte		AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-GGGG-HHHH
+char[44]: GGGG-HHHH
+char[45]: EEEE-FFFF
+char[46]: CCCC-DDDD
+char[47]: AAAA-BBBB
+　Emg [0]～[7] - 8byte
+char[48]: Emg[0]
+char[49]: Emg[1]
+char[50]: Emg[2]
+char[51]: Emg[3]
+char[52]: Emg[4]
+char[53]: Emg[5]
+char[54]: Emg[6]
+char[55]: Emg[7]
+　Pose(3bit), Arm(2bit), Direction(2bit) - 1byte
+char[56]: [Pose][Pose][Pose][Arm]-[Arm][Arm][Direction][Direction]
+　OnPair(1bit), OnConnect(1bit), OnArmSync(1bit), OnLock(1ib) - 4bit
+char[57]: [][][][]-[OnPair][OnConnect][OnArmSync][OnLock]
+
+<Output Packet>

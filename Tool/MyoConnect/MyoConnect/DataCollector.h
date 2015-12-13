@@ -14,12 +14,12 @@ struct MyoInformation
 	myo::Vector3<float> Gyro;
 	std::array<int8_t, 8> Emg;
 	myo::Pose::Type Pose;
+	myo::Arm WhichArm;
+	myo::XDirection ArmDirection;
 	bool OnPair : 1;
 	bool OnConnect : 1;
 	bool OnArmSync : 1;
 	bool OnLock : 1;
-	myo::Arm WhichArm : 2;
-	myo::XDirection ArmDirection : 2;
 
 	MyoInformation();
 };
