@@ -1,10 +1,16 @@
 #pragma once
 
+#include <memory>
+#include <mutex>
 #include <string>
 
 class UDPSocket;
 class DataCollector;
 
+namespace std
+{
+	class mutex;
+}
 namespace myo
 {
 	class Hub;
@@ -21,9 +27,10 @@ public:
 	static void Run();
 
 private:
-	UDPSocket* udpSocket;
-	DataCollector* collector;
-	myo::Hub* hub;
+	std::shared_ptr<UDPSocket> udpSocket;
+	std::shared_ptr<DataCollector> collector;
+	std::shared_ptr<myo::Hub> hub;
+	std::shared_ptr<std::mutex> mutex;
 	
 	static const int FPS = 90;
 	static const std::string LogString;

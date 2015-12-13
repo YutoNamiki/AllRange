@@ -25,6 +25,9 @@ namespace UnrealBuildTool.Rules
 					"Core",
 					"CoreUObject",
                     "Engine",
+                    "InputCore",
+                    "Slate",
+                    "SlateCore",
                     "Networking",
                     "Sockets",
 				}

@@ -1,4 +1,5 @@
 #include "MyoConnecter.h"
+#include <mutex>
 #include <iostream>
 #include <conio.h>
 #include <myo/Myo.hpp>
@@ -18,17 +19,18 @@ const std::string MyoConnecter::ErrorString = std::string("Error: ");
 
 MyoConnecter::MyoConnecter()
 {
-	hub = new myo::Hub("com.tool.myoconnect");
-	collector = new DataCollector();
-	udpSocket = new UDPSocket();
+	mutex = std::make_shared<std::mutex>();
+	hub = std::make_shared<myo::Hub>("com.tool.myoconnect");
+	collector = std::make_shared<DataCollector>(mutex);
+	udpSocket = std::make_shared<UDPSocket>(mutex);
 }
 
 MyoConnecter::~MyoConnecter()
 {
-	hub->removeListener(collector);
-	delete udpSocket;
-	delete collector;
-	delete hub;
+	hub->removeListener(collector.get());
+	mutex->lock();
+	std::cout << LogString << "アプリケーションを終了します。" << std::endl;
+	mutex->unlock();
 }
 
 bool MyoConnecter::Initializer()
@@ -38,7 +40,7 @@ bool MyoConnecter::Initializer()
 		std::cout << LogString << ErrorString << "hubの生成に失敗しました。" << std::endl;
 		return false;
 	}
-	hub->addListener(collector);
+	hub->addListener(collector.get());
 	auto myo = hub->waitForMyo(10000);
 	myo->setStreamEmg(myo::Myo::streamEmgEnabled);
 	collector->KnownMyos.push_back(myo);
@@ -48,6 +50,10 @@ bool MyoConnecter::Initializer()
 	if (!udpSocket->Initialize())
 		return false;
 
+	mutex->lock();
+	std::cout << LogString << ErrorString << "MyoConnecterを正常に起動しました。" << std::endl;
+	std::cout << LogString << ErrorString << "終了したい場合はEscキーを押してください。" << std::endl;
+	mutex->unlock();
 	return true;
 }
 
@@ -72,7 +78,9 @@ bool MyoConnecter::GetInputEscapeKey()
 		auto key = _getch();
 		if (key == 0x1b)
 		{
+			mutex->lock();
 			std::cout << LogString << "ESCが押されました。" << std::endl;
+			mutex->unlock();
 			udpSocket->SetIsFinish(true);
 			return true;
 		}

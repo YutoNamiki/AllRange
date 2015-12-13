@@ -75,3 +75,7 @@ char[56]: [Pose][Pose][Pose][Arm]-[Arm][Arm][Direction][Direction]
 char[57]: [][][][]-[OnPair][OnConnect][OnArmSync][OnLock]
 
 <Output Packet>
+
+・バイブレーション
+・アンロックタイプ
+・ロック

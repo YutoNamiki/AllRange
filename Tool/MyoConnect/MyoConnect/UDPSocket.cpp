@@ -16,9 +16,10 @@ const char* UDPSocket::ipv4AddressFrom = "127.0.0.1";
 const std::string UDPSocket::LogString = std::string("UDPSocket: ");
 const std::string UDPSocket::ErrorString = std::string("Error: ");
 
-std::mutex Mutex;
-
-UDPSocket::UDPSocket() { }
+UDPSocket::UDPSocket(std::shared_ptr<std::mutex> mutex)
+{ 
+	this->mutex = mutex;
+}
 
 UDPSocket::~UDPSocket()	
 {
@@ -27,7 +28,6 @@ UDPSocket::~UDPSocket()
 	
 	if (windowsSocketApiData != nullptr)
 		WindowSocketAPICleanup();
-	std::cout << LogString << "アプリケーションを終了します。" << std::endl;
 }
 
 bool UDPSocket::Initialize()
@@ -41,13 +41,15 @@ bool UDPSocket::Initialize()
 	if (!WindowSocketAPIStartup(*windowsSocketApiData))
 		return false;
 	
-	sendThread = std::make_shared<std::thread>(&SendMessageTo, ipv4AddressFrom, sendPort, std::ref(sendData), std::ref(isFinish));
+	sendThread = std::make_shared<std::thread>(&SendMessageTo, std::ref(mutex), ipv4AddressFrom, sendPort, 
+		std::ref(sendData), std::ref(isFinish));
 	if (sendThread == nullptr)
 	{
 		std::cout << LogString << ErrorString << "sendThreadの生成に失敗しました。" << std::endl;
 		return false;
 	}
-	receiveThread = std::make_shared<std::thread>(&ReceiveMessageFrom, ipv4AddressIn, receivePort, std::ref(receiveData), std::ref(isFinish));
+	receiveThread = std::make_shared<std::thread>(&ReceiveMessageFrom, std::ref(mutex), ipv4AddressIn, receivePort, 
+		std::ref(receiveData), std::ref(isFinish));
 	if (receiveThread == nullptr)
 	{
 		std::cout << LogString << ErrorString << "receiveThreadの生成に失敗しました。" << std::endl;
@@ -169,19 +171,19 @@ bool UDPSocket::WindowSocketAPIStartup(WSAData& winSocketAPIData)
 	return true;
 }
 
-bool UDPSocket::CreateSocket(unsigned long long& sock)
+bool UDPSocket::CreateSocket(std::shared_ptr<std::mutex> mutex, unsigned long long& sock)
 {
 	sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock < 0)
 	{
-		Mutex.lock();
+		mutex->lock();
 		std::cout << LogString << ErrorString << "ソケットの初期化に失敗しました。" << std::endl;
-		Mutex.unlock();
+		mutex->unlock();
 		return false;
 	}
-	Mutex.lock();
+	mutex->lock();
 	std::cout << LogString << "ソケットを初期化しました。" << std::endl;
-	Mutex.unlock();
+	mutex->unlock();
 	return true;
 }
 
@@ -193,27 +195,27 @@ void UDPSocket::SetAddress(sockaddr_in& address, const char* ipv4Address, const 
 	inet_pton(AF_INET, ipv4Address, &(address.sin_addr));
 }
 
-bool UDPSocket::BindSocket(unsigned long long& sock, sockaddr_in& Address)
+bool UDPSocket::BindSocket(std::shared_ptr<std::mutex> mutex, unsigned long long& sock, sockaddr_in& Address)
 {
 	if (bind(sock, reinterpret_cast<LPSOCKADDR>(&Address), static_cast<int>(sizeof(Address))) == SOCKET_ERROR)
 	{
-		Mutex.lock();
+		mutex->lock();
 		std::cout << LogString << ErrorString << "ソケットのバインドに失敗しました。" << std::endl;
-		Mutex.unlock();
+		mutex->unlock();
 		return false;
 	}
-	Mutex.lock();
+	mutex->lock();
 	std::cout << LogString << "ソケットをバインドしました。" << std::endl;
-	Mutex.unlock();
+	mutex->unlock();
 	return true;
 }
 
-void UDPSocket::CloseSocket(unsigned long long& sock)
+void UDPSocket::CloseSocket(std::shared_ptr<std::mutex> mutex, unsigned long long& sock)
 {
 	closesocket(sock);
-	Mutex.lock();
+	mutex->lock();
 	std::cout << LogString << "ソケットをクローズしました。" << std::endl;
-	Mutex.unlock();
+	mutex->unlock();
 }
 
 void UDPSocket::WindowSocketAPICleanup()
@@ -222,49 +224,49 @@ void UDPSocket::WindowSocketAPICleanup()
 	std::cout << LogString << "WinSocketAPIをクリーンアップしました。" << std::endl;
 }
 
-void UDPSocket::SendMessageTo(const char* ipv4Address, const unsigned short port, std::array<char, 58>& data, bool& isFinish)
+void UDPSocket::SendMessageTo(std::shared_ptr<std::mutex>& mutex, const char* ipv4Address, const unsigned short port, std::array<char, 58>& data, bool& isFinish)
 {
 	SOCKET socketHandle;
 	sockaddr_in address;
 
-	if (!CreateSocket(socketHandle))
+	if (!CreateSocket(mutex, socketHandle))
 		return;
 	SetAddress(address, ipv4Address, port);
 
 	while (!isFinish)
 	{
 		auto sendData = data.data();
-		auto size = data.size();
+		auto size = static_cast<int>(data.size());
 		auto result = sendto(socketHandle, sendData, size, 0, reinterpret_cast<sockaddr*>(&address), sizeof(address));
 		if (result == SOCKET_ERROR)
 		{
-			Mutex.lock();
+			mutex->lock();
 			std::cout << LogString << ErrorString << "データの送信に失敗しました。" << std::endl;
-			Mutex.unlock();
+			mutex->unlock();
 		}
 	}
 
-	CloseSocket(socketHandle);
+	CloseSocket(mutex, socketHandle);
 }
 
-void UDPSocket::ReceiveMessageFrom(const char* ipv4Address, const unsigned short port, std::array<char, 256>& data, bool& isFinish)
+void UDPSocket::ReceiveMessageFrom(std::shared_ptr<std::mutex>& mutex, const char* ipv4Address, const unsigned short port, std::array<char, 256>& data, bool& isFinish)
 {
 	SOCKET socketHandle;
 	sockaddr_in address;
 
-	if (!CreateSocket(socketHandle))
+	if (!CreateSocket(mutex, socketHandle))
 		return;
 	SetAddress(address, ipv4Address, port);
 	u_long value = 1;
 	ioctlsocket(socketHandle, FIONBIO, &value);
-	if (!BindSocket(socketHandle, address))
+	if (!BindSocket(mutex, socketHandle, address))
 		return;
 
 	while (!isFinish)
 	{
 		socklen_t fromLength = sizeof(address);
 		auto receiveData = data.data();
-		auto size = data.size();
+		auto size = static_cast<int>(data.size());
 		auto result = recvfrom(socketHandle, receiveData, size, 0, reinterpret_cast<sockaddr*>(&address), &fromLength);
 		if (result == SOCKET_ERROR)
 		{
@@ -272,11 +274,11 @@ void UDPSocket::ReceiveMessageFrom(const char* ipv4Address, const unsigned short
 		}
 		else
 		{
-			Mutex.lock();
+			mutex->lock();
 			std::cout << LogString << "UnrealEngineからのデータを受信しました。" << std::endl;
-			Mutex.unlock();
+			mutex->unlock();
 		}
 	}
 
-	CloseSocket(socketHandle);
+	CloseSocket(mutex, socketHandle);
 }

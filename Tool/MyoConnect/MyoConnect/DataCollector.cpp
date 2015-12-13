@@ -1,4 +1,5 @@
 #include "DataCollector.h"
+#include <mutex>
 
 const std::string DataCollector::LogString = std::string("DataCollector: ");
 const std::string DataCollector::ErrorString = std::string("Error: ");
@@ -19,9 +20,9 @@ MyoInformation::MyoInformation()
 	Emg.fill(0);
 }
 
-DataCollector::DataCollector()
+DataCollector::DataCollector(std::shared_ptr<std::mutex> mutex)
 {
-	
+	this->mutex = mutex;
 }
 
 DataCollector::~DataCollector()

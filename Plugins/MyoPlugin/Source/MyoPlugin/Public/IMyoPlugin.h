@@ -4,6 +4,13 @@
 
 #include "ModuleManager.h"
 
+class IMyoDelegate;
+struct FMyoDeviceData;
+enum class MyoArm : uint8;
+enum class MyoLockingPolicy : uint8;
+enum class MyoUnlockType : uint8;
+enum class MyoStreamEmgType : uint8;
+enum class MyoVibrationType : uint8;
 
 /**
  * The public interface to this module
@@ -33,5 +40,23 @@ public:
 	{
 		return FModuleManager::Get().IsModuleLoaded( "MyoPlugin" );
 	}
+
+	virtual void SetDelegate(IMyoDelegate* newDelegate) {};
+	virtual void RemoveDelegate() {};
+	virtual void MyoTick(float DeltaTime) {};
+	virtual void VibrateDevice(int32 deviceId, MyoVibrationType vibrationType) {};
+	virtual FMyoDeviceData* LatestData(int32 deviceId) { return nullptr; };
+	virtual void WhichArm(int32 deviceId, MyoArm& arm) {};
+	virtual void LeftMyoId(bool& available, int32& deviceId) {};
+	virtual void RightMyoId(bool& available, int32& deviceId) {};
+	virtual void PrimaryMyoId(bool& available, int32& deviceId) {};
+	virtual void MaxMyoId(int32& myoId) {};
+	virtual bool IsHubEnabled() = 0;
+	virtual bool IsValidDeviceId(int32 deviceId) = 0;
+	virtual void CalibrateOrientation(int32 deviceId, FRotator direction) {};
+	virtual void SetLockingPolicy(MyoLockingPolicy policy) {};
+	virtual void UnlockMyo(int32 deviceId, MyoUnlockType type) {};
+	virtual void LockMyo(int32 deviceId) {};
+	virtual void SetStreamEmg(int32 deviceId, MyoStreamEmgType type) {};
 };
 

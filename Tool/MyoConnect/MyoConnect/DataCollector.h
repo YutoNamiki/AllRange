@@ -1,10 +1,16 @@
 #pragma once
 
 #include <array>
+#include <memory>
 #include <vector>
 #include <myo/Myo.hpp>
 
 #pragma comment(lib, "myo64.lib")
+
+namespace std
+{
+	class mutex;
+}
 
 struct MyoInformation
 {
@@ -30,7 +36,7 @@ public:
 	std::vector<myo::Myo*> KnownMyos;
 	std::vector<MyoInformation> MyoInfos;
 
-	DataCollector();
+	DataCollector(std::shared_ptr<std::mutex> mutex);
 	~DataCollector();
 	int IdentifyMyo(myo::Myo* myo);
 	void PrintData(MyoInformation myo);
@@ -53,6 +59,8 @@ public:
 	virtual void onWarmupCompleted(myo::Myo* myo, uint64_t timestamp, myo::WarmupResult warmupResult) override;
 
 private:
+	std::shared_ptr<std::mutex> mutex;
+
 	static const std::string LogString;
 	static const std::string ErrorString;
 
