@@ -13,7 +13,7 @@ class SendDataWorker : public FRunnable
 {
 public:
 
-	SendDataWorker(FString myoDriverIP, uint32 port);
+	SendDataWorker(FCriticalSection& mutex, FString myoDriverIP, uint32 port, TArray<uint8>& sendData);
 	virtual bool Init() override;
 	virtual uint32 Run() override;
 	virtual void Stop() override;
@@ -27,14 +27,15 @@ private:
 	TSharedPtr<FInternetAddr> address;
 	FString myoDriverIP;
 	uint32 port;
-
+	TArray<uint8>* sendData;
+	FCriticalSection* mutex;
 };
 
 class ReceiveDataWorker : public FRunnable
 {
 public:
 
-	ReceiveDataWorker(FString myoDriverIP, uint32 port);
+	ReceiveDataWorker(FCriticalSection& mutex, FString myoDriverIP, uint32 port, TArray<uint8>& receiveData);
 	virtual bool Init() override;
 	virtual uint32 Run() override;
 	virtual void Stop() override;
@@ -48,7 +49,8 @@ private:
 	TSharedPtr<FInternetAddr> address;
 	FString myoDriverIP;
 	uint32 port;
-
+	TArray<uint8>* receiveData;
+	FCriticalSection* mutex;
 };
 
 UCLASS()
@@ -87,6 +89,20 @@ public:
 
 	//void PressPose(myo::Pose pose);
 	//void ReleasePose(myo::Pose pose);
+	void Tick(float deltaTime);
+	void OnConnect();
+	void OnDisconnect();
+	void OnArmSync();
+	void OnArmUnsync();
+	void OnPair();
+	void OnUnpair();
+	void OnOrientationData();
+	void OnAccelerometerData();
+	void OnGyroscopeData();
+	void OnUnlock();
+	void OnLock();
+	void OnPose();
+	void OnEmgData();
 	//int32 IdentifyMyo(myo::Myo* myo);
 	//myo::Myo* LastValidMyo();
 	//bool MyoIsValidForInputMapping(myo::Myo* myo);
@@ -101,9 +117,12 @@ public:
 	//void SetLockingPolicy(myo::Hub::LockingPolicy policy);
 
 private:
-	FString MyoDriverIP = "127.0.0.1";
-	uint32 SendPort = 8000;
-	uint32 ReceivePort = 8001;
+	FString myoDriverIP = "127.0.0.1";
+	uint32 sendPort = 8000;
+	uint32 receivePort = 8001;
+	TArray<uint8> sendData;
+	TArray<uint8> receiveData;
+	FCriticalSection mutex;
 
 	TSharedPtr<FRunnableThread> sendThread;
 	TSharedPtr<FRunnableThread> receiveThread;

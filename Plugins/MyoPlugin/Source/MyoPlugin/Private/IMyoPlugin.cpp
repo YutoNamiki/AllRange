@@ -63,14 +63,6 @@ FRotator ConvertOrientationToArmSpace(FRotator convertedOrientation, FRotator ar
 class FMyoPlugin : public IMyoPlugin
 {
 public:
-	FString MyoDriverIP = "127.0.0.1";
-	uint32 SendPort = 8000;
-	uint32 ReceivePort = 8001;
-	FIPv4Address MyoDirverIPAddress;
-	FSocket* SendSocket;
-	FSocket* ReceiveSocket;
-	FUdpSocketReceiver* Receiver;
-
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 	virtual void SetDelegate(IMyoDelegate* newDelegate) override;
@@ -198,6 +190,7 @@ void FMyoPlugin::RemoveDelegate()
 
 void FMyoPlugin::MyoTick(float DeltaTime)
 {
+	collector->Tick(DeltaTime);
 
 }
 
