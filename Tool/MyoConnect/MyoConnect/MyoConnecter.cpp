@@ -52,8 +52,8 @@ bool MyoConnecter::Initializer()
 		return false;
 
 	mutex->lock();
-	std::cout << LogString << ErrorString << "MyoConnecterを正常に起動しました。" << std::endl;
-	std::cout << LogString << ErrorString << "終了したい場合はEscキーを押してください。" << std::endl;
+	std::cout << LogString << "MyoConnecterを正常に起動しました。" << std::endl;
+	std::cout << LogString << "終了したい場合はEscキーを押してください。" << std::endl;
 	mutex->unlock();
 	return true;
 }

@@ -14,6 +14,7 @@ class SendDataWorker : public FRunnable
 public:
 
 	SendDataWorker(FCriticalSection& mutex, FString myoDriverIP, uint32 port, TArray<uint8>& sendData);
+	virtual ~SendDataWorker();
 	virtual bool Init() override;
 	virtual uint32 Run() override;
 	virtual void Stop() override;
@@ -21,10 +22,10 @@ public:
 
 private:
 	FThreadSafeCounter stopTaskCounter;
-	TSharedPtr<ISocketSubsystem> socketSubSystem;
-	TSharedPtr<FSocket> socket;
-	TSharedPtr<FIPv4Address> ipv4Address;
-	TSharedPtr<FInternetAddr> address;
+	ISocketSubsystem* socketSubSystem = nullptr;
+	FSocket* socket = nullptr;
+	FIPv4Address* ipv4Address = nullptr;
+	TSharedRef<FInternetAddr>* address;
 	FString myoDriverIP;
 	uint32 port;
 	TArray<uint8>* sendData;
@@ -36,6 +37,7 @@ class ReceiveDataWorker : public FRunnable
 public:
 
 	ReceiveDataWorker(FCriticalSection& mutex, FString myoDriverIP, uint32 port, TArray<uint8>& receiveData);
+	virtual ~ReceiveDataWorker();
 	virtual bool Init() override;
 	virtual uint32 Run() override;
 	virtual void Stop() override;
@@ -43,10 +45,10 @@ public:
 
 private:
 	FThreadSafeCounter stopTaskCounter;
-	TSharedPtr<ISocketSubsystem> socketSubSystem;
-	TSharedPtr<FSocket> socket;
-	TSharedPtr<FIPv4Address> ipv4Address;
-	TSharedPtr<FInternetAddr> address;
+	ISocketSubsystem* socketSubSystem = nullptr;
+	FSocket* socket = nullptr;
+	FIPv4Address* ipv4Address = nullptr;
+	TSharedRef<FInternetAddr>* address;
 	FString myoDriverIP;
 	uint32 port;
 	TArray<uint8>* receiveData;
@@ -96,7 +98,7 @@ public:
 	void OnArmUnsync(uint64 myoId);
 	void OnPair(uint64 myoId);
 	void OnUnpair(uint64 myoId);
-	void OnOrientationData(uint64 myoId, FRotator& rotation);
+	void OnOrientationData(uint64 myoId, FQuat& quat);
 	void OnAccelerometerData(uint64 myoId, FVector& accel);
 	void OnGyroscopeData(uint64 myoId, FVector& gyro);
 	void OnUnlock(uint64 myoId);
@@ -107,14 +109,14 @@ public:
 	uint64 LastValidMyo();
 	bool MyoIsValidForInputMapping(uint64 myoId);
 	int32 MyoIndexForMyo(uint64 myoId);
-	void StartListening();
-	void StopListening();
 	void UnlockHoldEachMyo();
 	void LockEachMyo();
 	bool Startup();
 	void ShutDown();
 	void ResetHub();
 	void SetLockingPolicy(MyoLockingPolicy policy);
+
+	static FRotator CombineRotators(FRotator a, FRotator b);
 
 private:
 	FString myoDriverIP = "127.0.0.1";
@@ -124,8 +126,9 @@ private:
 	TArray<uint8> receiveData;
 	FCriticalSection mutex;
 
-	TSharedPtr<FRunnableThread> sendThread;
-	TSharedPtr<FRunnableThread> receiveThread;
-	TSharedPtr<SendDataWorker> sendDataWorker;
-	TSharedPtr<ReceiveDataWorker> receiveDataWorker;
+	FRunnableThread* sendThread = nullptr;
+	FRunnableThread* receiveThread = nullptr;
+	SendDataWorker* sendDataWorker = nullptr;
+	ReceiveDataWorker* receiveDataWorker = nullptr;
+
 };

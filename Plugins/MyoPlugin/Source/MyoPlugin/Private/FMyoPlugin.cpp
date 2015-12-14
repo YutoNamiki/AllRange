@@ -6,8 +6,6 @@
 #include "DataCollector.h"
 
 static const FString PluginVersion = "ver.SgnmkOriginal";
-static const FRotator OrientationScale = FRotator(1.0f / 90.0f, 1.0f / 180.0f, 1.0f / 180.0f);
-static const float GyroScale = 1.0f / 45.0f;
 
 const FKey EMyoKeys::PoseRest("MyoPoseRest");
 const FKey EMyoKeys::PoseFist("MyoPoseFist");
@@ -55,24 +53,32 @@ void FMyoPlugin::StartupModule()
 void FMyoPlugin::ShutdownModule()
 {
 	collector->MyoDelegate = nullptr;
-	collector->ShutDown();
+	//collector->ShutDown();
 }
 
 void FMyoPlugin::SetDelegate(IMyoDelegate* newDelegate)
 {
 	collector->MyoDelegate = newDelegate;
 	collector->Startup();
+	if(!collector->Enabled) 
+	{
+		collector->MyoDelegate->MyoDisabled();
+		UE_LOG(MyoPluginLog, Warning, TEXT("Myo is Disabled."));
+	}
+	//else
+	//	collector->SetLockingPolicy(myo::Hub::lockingPolicyNone);
+	UE_LOG(MyoPluginLog, Log, TEXT("Myo Delegate Set (should only be called once per begin play or you have duplicates)."));
 }
 
 void FMyoPlugin::RemoveDelegate()
 {
-
+	collector->MyoDelegate = nullptr;
+	collector->ShutDown();
 }
 
 void FMyoPlugin::MyoTick(float DeltaTime)
 {
 	collector->Tick(DeltaTime);
-
 }
 
 void FMyoPlugin::VibrateDevice(int32 deviceId, MyoVibrationType vibrationType)
@@ -82,50 +88,80 @@ void FMyoPlugin::VibrateDevice(int32 deviceId, MyoVibrationType vibrationType)
 
 FMyoDeviceData* FMyoPlugin::LatestData(int32 deviceId)
 {
-
-	return nullptr;
+	if (!this->IsValidDeviceId(deviceId)) 
+		return nullptr;
+	return &(collector->Data[deviceId - 1]);
 }
 
 void FMyoPlugin::WhichArm(int32 deviceId, MyoArm& arm)
 {
-
+	if (!this->IsValidDeviceId(deviceId)) 
+		return;
+	arm = collector->Data[deviceId - 1].Arm;
 }
 
 void FMyoPlugin::LeftMyoId(bool& available, int32& deviceId)
 {
-
+	if (collector->LeftMyo == -1)
+		available = false;
+	else 
+	{
+		available = true;
+		deviceId = collector->LeftMyo;
+	}
 }
 
 void FMyoPlugin::RightMyoId(bool& available, int32& deviceId)
 {
-
+	if (collector->RightMyo == -1)
+		available = false;
+	else 
+	{
+		available = true;
+		deviceId = collector->RightMyo;
+	}
 }
 
 void FMyoPlugin::PrimaryMyoId(bool& available, int32& deviceId)
 {
-
+	deviceId = collector->IdentifyMyo(collector->LastValidMyo());
+	available = (deviceId != -1);
 }
 
 void FMyoPlugin::MaxMyoId(int32& maxId)
 {
-
+	maxId = collector->Data.Num();
 }
 
 bool FMyoPlugin::IsHubEnabled()
 {
-
-	return false;
+	return collector->Enabled;
 }
 
 bool FMyoPlugin::IsValidDeviceId(int32 deviceId)
 {
-
-	return false;
+	return !(deviceId < 1 || deviceId > collector->Data.Num());
 }
 
 void FMyoPlugin::CalibrateOrientation(int32 deviceId, FRotator direction)
 {
-
+	if (deviceId == 0)
+	{
+		for (auto i = 0; i < collector->Data.Num(); ++i)
+		{
+			collector->Data[i].ArmSpaceCorrection = CombineRotators(collector->Data[i].Orientation * -1.0f, direction);
+			collector->ArmSpaceCorrection = collector->Data[i].ArmSpaceCorrection;
+			collector->CorrectionAvailable = true;
+		}
+	}
+	else
+	{
+		if (!this->IsValidDeviceId(deviceId)) 
+			return;
+		collector->Data[deviceId - 1].ArmSpaceCorrection = CombineRotators(collector->Data[deviceId - 1].Orientation * -1.0f, direction);
+		collector->ArmSpaceCorrection = collector->Data[deviceId - 1].ArmSpaceCorrection;
+		collector->CorrectionAvailable = true;
+	}
 }
 
 void FMyoPlugin::SetLockingPolicy(MyoLockingPolicy policy)
@@ -146,6 +182,11 @@ void FMyoPlugin::LockMyo(int32 deviceId)
 void FMyoPlugin::SetStreamEmg(int32 deviceId, MyoStreamEmgType type)
 {
 
+}
+
+FRotator FMyoPlugin::CombineRotators(FRotator a, FRotator b)
+{
+	return FRotator(FQuat(b) * FQuat(a));
 }
 
 #undef LOCTEXT_NAMESPACE

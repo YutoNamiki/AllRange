@@ -5,11 +5,13 @@
 #include "Sockets.h"
 #include "SocketSubsystem.h"
 
+static const FRotator OrientationScale = FRotator(1.0f / 90.0f, 1.0f / 180.0f, 1.0f / 180.0f);
+static const float GyroScale = 1.0f / 45.0f;
+
 bool EmitKeyUpEventForKey(FKey key, int32 user, bool repeat);
 bool EmitKeyDownEventForKey(FKey key, int32 user, bool repeat);
-bool EmitAnalogInputEventForKey(FKey key, float value, int user);
+bool EmitAnalogInputEventForKey(FKey key, float value, int user); 
 FRotator ConvertOrientationToUE(FRotator rawOrientation);
-FRotator CombineRotators(FRotator a, FRotator b);
 FVector ConvertVectorToUE(FVector rawAcceleration);
 FVector ConvertAccelerationToBodySpace(FVector armAcceleration, FRotator orientation, FRotator armCorrection, MyoArmDirection direction);
 FRotator ConvertOrientationToArmSpace(FRotator convertedOrientation, FRotator armCorrection, MyoArmDirection direction);
@@ -22,13 +24,18 @@ SendDataWorker::SendDataWorker(FCriticalSection& mutex, FString myoDriverIP, uin
 	this->sendData = &sendData;
 }
 
+SendDataWorker::~SendDataWorker()
+{
+	
+}
+
 bool SendDataWorker::Init()
 {
-	ipv4Address = TSharedPtr<FIPv4Address>(new FIPv4Address());
+	ipv4Address = new FIPv4Address();
 	FIPv4Address::Parse(myoDriverIP, *ipv4Address);
-	socketSubSystem = TSharedPtr<ISocketSubsystem>(ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM));
-	address = socketSubSystem->CreateInternetAddr(ipv4Address->GetValue(), port);
-	socket = TSharedPtr<FSocket>(socketSubSystem->CreateSocket(NAME_DGram, TEXT("MyoSendSocket"), true));
+	socketSubSystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
+	address = new TSharedRef<FInternetAddr>(socketSubSystem->CreateInternetAddr(ipv4Address->GetValue(), port));
+	socket = socketSubSystem->CreateSocket(NAME_DGram, TEXT("MyoSendSocket"), true);
 	socket->SetNonBlocking(true);
 	socket->SetReuseAddr(true);
 
@@ -44,10 +51,10 @@ uint32 SendDataWorker::Run()
 	auto serializedMessage = reinterpret_cast<uint8*>(TCHAR_TO_UTF8(charMessage));
 	while (stopTaskCounter.GetValue() == 0)
 	{
-		if (socket->SendTo(serializedMessage, sendSize, sendSent, *address))
+		if (socket->SendTo(serializedMessage, sendSize, sendSent, **address))
 		{
 			auto logString = FString("SendMessage: ") + FString(UTF8_TO_TCHAR(reinterpret_cast<char*>(&serializedMessage)));
-			UE_LOG(LogTemp, Warning, TEXT("%s"), *logString);
+			//UE_LOG(LogTemp, Warning, TEXT("%s"), *logString);
 		}
 		FPlatformProcess::Sleep(1.0f / 60.0f);
 	}
@@ -63,6 +70,14 @@ void SendDataWorker::Stop()
 void SendDataWorker::Exit()
 {
 	socket->Close();
+	delete address;
+	delete ipv4Address;
+	delete socketSubSystem;
+	delete socket;
+	address = nullptr;
+	ipv4Address = nullptr;
+	socketSubSystem = nullptr;
+	socket = nullptr;
 }
 
 ReceiveDataWorker::ReceiveDataWorker(FCriticalSection& mutex, FString myoDriverIP, uint32 port, TArray<uint8>& receiveData)
@@ -73,16 +88,21 @@ ReceiveDataWorker::ReceiveDataWorker(FCriticalSection& mutex, FString myoDriverI
 	this->receiveData = &receiveData;
 }
 
+ReceiveDataWorker::~ReceiveDataWorker()
+{
+	
+}
+
 bool ReceiveDataWorker::Init()
 {
-	ipv4Address = TSharedPtr<FIPv4Address>(new FIPv4Address());
+	ipv4Address = new FIPv4Address();
 	FIPv4Address::Parse(myoDriverIP, *ipv4Address);
-	socketSubSystem = TSharedPtr<ISocketSubsystem>(ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM));
-	address = socketSubSystem->CreateInternetAddr(ipv4Address->GetValue(), port);
-	socket = TSharedPtr<FSocket>(socketSubSystem->CreateSocket(NAME_DGram, TEXT("MyoSendSocket"), true));
+	socketSubSystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
+	address = new TSharedRef<FInternetAddr>(socketSubSystem->CreateInternetAddr(ipv4Address->GetValue(), port));
+	socket = socketSubSystem->CreateSocket(NAME_DGram, TEXT("MyoSendSocket"), true);
 	socket->SetNonBlocking(true);
 	socket->SetReuseAddr(true);
-	socket->Bind(*address);
+	socket->Bind(**address);
 
 	return true;
 }
@@ -95,12 +115,12 @@ uint32 ReceiveDataWorker::Run()
 		TArray<uint8> receive;
 		receive.Init(0, 58);
 		receiveSent = 0;
-		if (socket->RecvFrom(receive.GetData(), receive.Num(), receiveSent, *address))
+		if (socket->RecvFrom(receive.GetData(), receive.Num(), receiveSent, **address))
 		{
 			auto receiveMessage = reinterpret_cast<char*>(receive.GetData());
 			auto logString = FString("ReceiveMessage: ") + FString(receiveMessage);
 			FScopeLock lock(mutex);
-			UE_LOG(LogTemp, Warning, TEXT("%s"), *logString);
+			//UE_LOG(LogTemp, Warning, TEXT("%s"), *logString);
 			*receiveData = receive;
 		}
 		FPlatformProcess::Sleep(1.0f / 60.0f);
@@ -117,6 +137,14 @@ void ReceiveDataWorker::Stop()
 void ReceiveDataWorker::Exit()
 {
 	socket->Close();
+	delete address;
+	delete ipv4Address;
+	delete socketSubSystem;
+	delete socket;
+	address = nullptr;
+	ipv4Address = nullptr;
+	socketSubSystem = nullptr;
+	socket = nullptr;
 }
 
 UDataCollector::UDataCollector(class FObjectInitializer const& objectInitializer)
@@ -193,7 +221,7 @@ void UDataCollector::ReleasePose(MyoPose pose)
 void UDataCollector::Tick(float deltaTime)
 {
 	uint64 id = 0;
-	FRotator rotation = FRotator::ZeroRotator;
+	FQuat rotation = FQuat::Identity;
 	FVector acceleration = FVector::ZeroVector, gyro = FVector::ZeroVector;
 	TArray<int8> emg;
 	emg.Init(0, 8);
@@ -210,7 +238,7 @@ void UDataCollector::Tick(float deltaTime)
 		uint32 ry = (static_cast<uint32>(data[12]) << 0) | (static_cast<uint32>(data[13]) << 8) | (static_cast<uint32>(data[14]) << 16) | (static_cast<uint32>(data[15]) << 24);
 		uint32 rz = (static_cast<uint32>(data[16]) << 0) | (static_cast<uint32>(data[17]) << 8) | (static_cast<uint32>(data[18]) << 16) | (static_cast<uint32>(data[19]) << 24);
 		uint32 rw = (static_cast<uint32>(data[20]) << 0) | (static_cast<uint32>(data[21]) << 8) | (static_cast<uint32>(data[22]) << 16) | (static_cast<uint32>(data[23]) << 24);
-		rotation = FRotator(FQuat(*reinterpret_cast<float*>(&rx), *reinterpret_cast<float*>(&ry), *reinterpret_cast<float*>(&rz), *reinterpret_cast<float*>(&rw)));
+		rotation = FQuat(*reinterpret_cast<float*>(&rx), *reinterpret_cast<float*>(&ry), *reinterpret_cast<float*>(&rz), *reinterpret_cast<float*>(&rw));
 		uint32 ax = (static_cast<uint32>(data[24]) << 0) | (static_cast<uint32>(data[25]) << 8) | (static_cast<uint32>(data[26]) << 16) | (static_cast<uint32>(data[27]) << 24);
 		uint32 ay = (static_cast<uint32>(data[28]) << 0) | (static_cast<uint32>(data[29]) << 8) | (static_cast<uint32>(data[30]) << 16) | (static_cast<uint32>(data[31]) << 24);
 		uint32 az = (static_cast<uint32>(data[32]) << 0) | (static_cast<uint32>(data[33]) << 8) | (static_cast<uint32>(data[34]) << 16) | (static_cast<uint32>(data[35]) << 24);
@@ -245,102 +273,206 @@ void UDataCollector::Tick(float deltaTime)
 
 void UDataCollector::OnConnect(uint64 myoId)
 {
-
+	UE_LOG(MyoPluginLog, Log, TEXT("Myo %d  has connected."), IdentifyMyo(myoId));
+	if (MyoDelegate)
+		MyoDelegate->OnConnect(IdentifyMyo(myoId));
 }
 
 void UDataCollector::OnDisconnect(uint64 myoId)
 {
-
+	UE_LOG(MyoPluginLog, Log, TEXT("Myo %d  has disconnected."), IdentifyMyo(myoId));
+	if (MyoDelegate)
+		MyoDelegate->OnDisconnect(IdentifyMyo(myoId));
+	if (myoId == LastPairedMyo)
+		LastPairedMyo = LastValidMyo();
 }
 
 void UDataCollector::OnArmSync(uint64 myoId, MyoArm arm, MyoArmDirection xDirection)
 {
-
+	auto myoIndex = MyoIndexForMyo(myoId);
+	Data[myoIndex].Arm = arm;
+	Data[myoIndex].XDirection = xDirection;
+	if (arm == MyoArm::Left)
+		LeftMyo = myoIndex + 1;
+	if (arm == MyoArm::Right)
+		RightMyo = myoIndex + 1;
+	if (MyoDelegate)
+		MyoDelegate->OnArmSync(IdentifyMyo(myoId), arm, xDirection);
 }
 
 void UDataCollector::OnArmUnsync(uint64 myoId)
 {
-
+	auto myoIndex = MyoIndexForMyo(myoId);
+	Data[myoIndex].Arm = MyoArm::Unknown;
+	Data[myoIndex].XDirection = MyoArmDirection::Unknown;
+	if (LeftMyo == myoIndex + 1)
+		LeftMyo = -1;
+	if (RightMyo == myoIndex + 1)
+		RightMyo = -1;
+	if (MyoDelegate)
+		MyoDelegate->OnArmUnsync(IdentifyMyo(myoId));
 }
 
 void UDataCollector::OnPair(uint64 myoId)
 {
-
+	auto myoIndex = MyoIndexForMyo(myoId);
+	if (myoIndex == -1) 
+	{
+		KnownMyos.Add(myoId);
+		FMyoDeviceData data;
+		data.XDirection = MyoArmDirection::Unknown;
+		data.Arm = MyoArm::Unknown;
+		if (CorrectionAvailable)
+			data.ArmSpaceCorrection = ArmSpaceCorrection;
+		Data.Add(data);
+	}
+	if (MyoDelegate != nullptr)
+		MyoDelegate->OnPair(IdentifyMyo(myoId));
+	LastPairedMyo = myoId;
 }
 
 void UDataCollector::OnUnpair(uint64 myoId)
 {
-
+	auto myoIndex = MyoIndexForMyo(myoId);
+	if (MyoDelegate != nullptr)
+		MyoDelegate->OnUnpair(IdentifyMyo(myoId));
 }
 
-void UDataCollector::OnOrientationData(uint64 myoId, FRotator& rotation)
+void UDataCollector::OnOrientationData(uint64 myoId, FQuat& quat)
 {
-
+	auto myoIndex = MyoIndexForMyo(myoId);
+	Data[myoIndex].Quaternion.X = quat.X;
+	Data[myoIndex].Quaternion.Y = quat.Y;
+	Data[myoIndex].Quaternion.Z = quat.Z;
+	Data[myoIndex].Quaternion.W = quat.W;
+	Data[myoIndex].Orientation = ConvertOrientationToUE(FRotator(Data[myoIndex].Quaternion));
+	Data[myoIndex].ArmOrientation = ConvertOrientationToArmSpace(Data[myoIndex].Orientation, Data[myoIndex].ArmSpaceCorrection, Data[myoIndex].XDirection);
+	if (MyoDelegate)
+	{
+		MyoDelegate->OnOrientationData(myoIndex + 1, Data[myoIndex].Quaternion);
+		MyoDelegate->OnOrientationData(myoIndex + 1, Data[myoIndex].ArmOrientation);
+		if (MyoIsValidForInputMapping(myoId))
+		{
+			EmitAnalogInputEventForKey(EMyoKeys::OrientationPitch, Data[myoIndex].ArmOrientation.Pitch * OrientationScale.Pitch, 0);
+			EmitAnalogInputEventForKey(EMyoKeys::OrientationYaw, Data[myoIndex].ArmOrientation.Yaw * OrientationScale.Yaw, 0);
+			EmitAnalogInputEventForKey(EMyoKeys::OrientationRoll, Data[myoIndex].ArmOrientation.Roll * OrientationScale.Roll, 0);
+		}
+	}
 }
 
 void UDataCollector::OnAccelerometerData(uint64 myoId, FVector& accel)
 {
-
+	auto myoIndex = MyoIndexForMyo(myoId);
+	Data[myoIndex].Acceleration.X = accel.X;
+	Data[myoIndex].Acceleration.Y = accel.Y;
+	Data[myoIndex].Acceleration.Z = accel.Z;
+	Data[myoIndex].Acceleration = ConvertVectorToUE(Data[myoIndex].Acceleration);
+	Data[myoIndex].ArmAcceleration = Data[myoIndex].Acceleration;
+	Data[myoIndex].BodySpaceNullAcceleration = ConvertAccelerationToBodySpace(Data[myoIndex].ArmAcceleration, Data[myoIndex].Orientation, Data[myoIndex].ArmSpaceCorrection, Data[myoIndex].XDirection);
+	if (MyoDelegate)
+	{
+		MyoDelegate->OnAccelerometerData(myoIndex + 1, Data[myoIndex].Acceleration);
+		MyoDelegate->OnArmMoved(myoIndex + 1, Data[myoIndex].ArmAcceleration, Data[myoIndex].ArmOrientation, Data[myoIndex].ArmGyro, Data[myoIndex].Pose);																																		//InputMapping - only supports controller 1 for now
+		if (MyoIsValidForInputMapping(myoId))
+		{
+			EmitAnalogInputEventForKey(EMyoKeys::AccelerationX, Data[myoIndex].ArmAcceleration.X, 0);
+			EmitAnalogInputEventForKey(EMyoKeys::AccelerationY, Data[myoIndex].ArmAcceleration.Y, 0);
+			EmitAnalogInputEventForKey(EMyoKeys::AccelerationZ, Data[myoIndex].ArmAcceleration.Z, 0);
+		}
+	}
 }
 
 void UDataCollector::OnGyroscopeData(uint64 myoId, FVector& gyro)
 {
-
+	auto myoIndex = MyoIndexForMyo(myoId);
+	Data[myoIndex].Gyro.X = gyro.X;
+	Data[myoIndex].Gyro.Y = gyro.Y;
+	Data[myoIndex].Gyro.Z = gyro.Z;
+	Data[myoIndex].ArmGyro = ConvertVectorToUE(Data[myoIndex].Gyro);
+	if (MyoDelegate)
+	{
+		MyoDelegate->OnGyroscopeData(myoIndex + 1, Data[myoIndex].Gyro);
+		if (MyoIsValidForInputMapping(myoId))
+		{
+			EmitAnalogInputEventForKey(EMyoKeys::GyroX, Data[myoIndex].ArmGyro.X * GyroScale, 0);
+			EmitAnalogInputEventForKey(EMyoKeys::GyroY, Data[myoIndex].ArmGyro.Y * GyroScale, 0);
+			EmitAnalogInputEventForKey(EMyoKeys::GyroZ, Data[myoIndex].ArmGyro.Z * GyroScale, 0);
+		}
+	}
 }
 
 void UDataCollector::OnUnlock(uint64 myoId)
 {
-
+	auto myoIndex = MyoIndexForMyo(myoId);
+	Data[myoIndex].IsLocked = false;
 }
 
 void UDataCollector::OnLock(uint64 myoId)
 {
-
+	auto myoIndex = MyoIndexForMyo(myoId);
+	Data[myoIndex].IsLocked = true;
 }
 
 void UDataCollector::OnPose(uint64 myoId, MyoPose pose)
 {
-
+	auto myoIndex = MyoIndexForMyo(myoId);
+	Data[myoIndex].Pose = pose;
+	UE_LOG(MyoPluginLog, Log, TEXT("Myo %d switched to pose %s."), IdentifyMyo(myoId), *FString::FromInt(static_cast<int32>(pose)));
+	if (MyoDelegate)
+	{
+		MyoDelegate->OnPose(myoIndex + 1, pose);
+		if (MyoIsValidForInputMapping(myoId))
+		{
+			ReleasePose(LastPose);
+			PressPose(pose);
+			LastPose = pose;
+		}
+	}
 }
 
 void UDataCollector::OnEmgData(uint64 myoId, TArray<int8>& emg)
 {
-
+	auto myoIndex = MyoIndexForMyo(myoId);
+	FMyoEmgData data;
+	for (auto emgValue : emg)
+		data.Streams.Add(emgValue);
+	MyoDelegate->OnEmgData(myoIndex + 1, data);
 }
 
 int32 UDataCollector::IdentifyMyo(uint64 myoId)
 {
-	return int32();
+	for (auto i = 0; i < KnownMyos.Num(); ++i) 
+	{
+		if (KnownMyos[i] == myoId)
+			return i + 1;
+	}
+	return 0;
 }
 
 uint64 UDataCollector::LastValidMyo()
 {
-	return uint64();
+	for (auto i = 0; i < KnownMyos.Num(); ++i) 
+	{
+		auto myoId = KnownMyos[i];
+		if (myoId != NULL)
+			return KnownMyos[i];
+	}
+	return NULL;
 }
 
 bool UDataCollector::MyoIsValidForInputMapping(uint64 myoId)
 {
-	return false;
+	return (myoId == LastPairedMyo);
 }
 
 int32 UDataCollector::MyoIndexForMyo(uint64 myoId)
 {
-	return int32();
-}
-
-void UDataCollector::StartListening()
-{
-
-}
-
-void UDataCollector::StopListening()
-{
-
+	return IdentifyMyo(myoId) - 1;
 }
 
 void UDataCollector::UnlockHoldEachMyo()
 {
-
+	
 }
 
 void UDataCollector::LockEachMyo()
@@ -350,29 +482,53 @@ void UDataCollector::LockEachMyo()
 
 bool UDataCollector::Startup()
 {
-	sendDataWorker = TSharedPtr<SendDataWorker>(new SendDataWorker(mutex, myoDriverIP, sendPort, sendData));
-	receiveDataWorker = TSharedPtr<ReceiveDataWorker>(new ReceiveDataWorker(mutex, myoDriverIP, receivePort, receiveData));
-	sendThread = TSharedPtr<FRunnableThread>(FRunnableThread::Create(sendDataWorker.Get(), TEXT("SendDataThread")));
-	receiveThread = TSharedPtr<FRunnableThread>(FRunnableThread::Create(receiveDataWorker.Get(), TEXT("ReceiveDataThread")));
+	if (sendDataWorker == nullptr)
+		sendDataWorker = new SendDataWorker(mutex, myoDriverIP, sendPort, sendData);
+	if (receiveDataWorker == nullptr)
+		receiveDataWorker = new ReceiveDataWorker(mutex, myoDriverIP, receivePort, receiveData);
+	if (sendThread == nullptr)
+		sendThread = FRunnableThread::Create(sendDataWorker, TEXT("SendDataThread"));
+	if (receiveThread == nullptr)
+		receiveThread = FRunnableThread::Create(receiveDataWorker, TEXT("ReceiveDataThread"));
 
 	return true;
 }
 
 void UDataCollector::ShutDown()
 {
-	if (sendDataWorker.Get() != nullptr)
+	if (sendDataWorker != nullptr)
 		sendDataWorker->Stop();
-	if (receiveDataWorker.Get() != nullptr)
+	if (receiveDataWorker != nullptr)
 		receiveDataWorker->Stop();
-	if (sendThread.Get() != nullptr)
+	if (sendThread != nullptr)
 	{
 		sendThread->WaitForCompletion();
 		sendThread->Kill();
 	}
-	if (receiveThread.Get() != nullptr)
+	if (receiveThread != nullptr)
 	{
 		receiveThread->WaitForCompletion();
 		receiveThread->Kill();
+	}
+	if (sendDataWorker != nullptr)
+	{
+		delete sendDataWorker;
+		sendDataWorker = nullptr;
+	}
+	if (receiveDataWorker != nullptr)
+	{
+		delete receiveDataWorker;
+		receiveDataWorker = nullptr;
+	}
+	if (sendThread != nullptr)
+	{
+		delete sendThread;
+		sendThread = nullptr;
+	}
+	if (receiveThread != nullptr)
+	{
+		delete receiveThread;
+		receiveThread = nullptr;
 	}
 }
 
@@ -385,6 +541,11 @@ void UDataCollector::ResetHub()
 void UDataCollector::SetLockingPolicy(MyoLockingPolicy policy)
 {
 
+}
+
+FRotator UDataCollector::CombineRotators(FRotator a, FRotator b)
+{
+	return FRotator(FQuat(b) * FQuat(a));
 }
 
 bool EmitKeyUpEventForKey(FKey key, int32 user, bool repeat)
@@ -410,11 +571,6 @@ FRotator ConvertOrientationToUE(FRotator rawOrientation)
 	return FRotator(rawOrientation.Pitch * -1.0f, rawOrientation.Yaw * -1.0f, rawOrientation.Roll);
 }
 
-FRotator CombineRotators(FRotator a, FRotator b)
-{
-	return FRotator(FQuat(b) * FQuat(a));
-}
-
 FVector ConvertVectorToUE(FVector rawAcceleration)
 {
 	return FVector(rawAcceleration.X, -rawAcceleration.Y, rawAcceleration.Z);
@@ -426,7 +582,7 @@ FVector ConvertAccelerationToBodySpace(FVector armAcceleration, FRotator orienta
 	if (direction == MyoArmDirection::Elbow)
 		directionModifier = -1.0f;
 	auto armYawCorrection = FRotator(0.0f, armCorrection.Yaw, 0.0f);
-	auto fullCompensationOrientation = CombineRotators(orientation, armYawCorrection);
+	auto fullCompensationOrientation = UDataCollector::CombineRotators(orientation, armYawCorrection);
 	auto reactionAcceleration = fullCompensationOrientation.RotateVector(armAcceleration);
 	return ((reactionAcceleration * FVector(directionModifier, directionModifier, 1.0f)) + FVector(0.0f, 0.0f, 1.0f)) * -1.0f;
 }
@@ -439,6 +595,6 @@ FRotator ConvertOrientationToArmSpace(FRotator convertedOrientation, FRotator ar
 		directionModifier = -1.0f;
 		convertedOrientation = FRotator(convertedOrientation.Pitch * directionModifier, convertedOrientation.Yaw, convertedOrientation.Roll * directionModifier);
 	}
-	auto tempRot = CombineRotators(FRotator(0.0f, 0.0f, armCorrection.Roll*directionModifier), convertedOrientation);
-	return CombineRotators(tempRot, FRotator(0.0f, armCorrection.Yaw, 0.0f));
+	auto tempRot = UDataCollector::CombineRotators(FRotator(0.0f, 0.0f, armCorrection.Roll*directionModifier), convertedOrientation);
+	return UDataCollector::CombineRotators(tempRot, FRotator(0.0f, armCorrection.Yaw, 0.0f));
 }

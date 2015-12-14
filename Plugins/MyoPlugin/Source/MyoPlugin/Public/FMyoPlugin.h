@@ -50,4 +50,6 @@ public:
 
 private:
 	UDataCollector* collector;
+
+	static FRotator CombineRotators(FRotator a, FRotator b);
 };
