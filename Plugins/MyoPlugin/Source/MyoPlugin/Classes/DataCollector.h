@@ -92,6 +92,8 @@ public:
 	void PressPose(MyoPose pose);
 	void ReleasePose(MyoPose pose);
 	void Tick(float deltaTime);
+	void ConvertData(FCriticalSection& mutex, uint8* data, uint64& id, FQuat& rot, FVector& accel, FVector& gyro, TArray<int8>& emg,
+		MyoPose& pose, MyoArm& arm, MyoArmDirection& direction, bool& pair, bool& connect, bool& armSync, bool& lock);
 	void OnConnect(uint64 myoId);
 	void OnDisconnect(uint64 myoId);
 	void OnArmSync(uint64 myoId, MyoArm arm, MyoArmDirection xDirection);

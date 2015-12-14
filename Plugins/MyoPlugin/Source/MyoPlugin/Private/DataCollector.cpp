@@ -15,6 +15,7 @@ FRotator ConvertOrientationToUE(FRotator rawOrientation);
 FVector ConvertVectorToUE(FVector rawAcceleration);
 FVector ConvertAccelerationToBodySpace(FVector armAcceleration, FRotator orientation, FRotator armCorrection, MyoArmDirection direction);
 FRotator ConvertOrientationToArmSpace(FRotator convertedOrientation, FRotator armCorrection, MyoArmDirection direction);
+FString ConvertPoseToString(MyoPose pose);
 
 SendDataWorker::SendDataWorker(FCriticalSection& mutex, FString myoDriverIP, uint32 port, TArray<uint8>& sendData)
 {
@@ -59,6 +60,13 @@ uint32 SendDataWorker::Run()
 		FPlatformProcess::Sleep(1.0f / 60.0f);
 	}
 
+	socket->Close();
+	delete address;
+	delete ipv4Address;
+	delete socket;
+	address = nullptr;
+	ipv4Address = nullptr;
+	socket = nullptr;
 	return 0;
 }
 
@@ -69,15 +77,7 @@ void SendDataWorker::Stop()
 
 void SendDataWorker::Exit()
 {
-	socket->Close();
-	delete address;
-	delete ipv4Address;
-	delete socketSubSystem;
-	delete socket;
-	address = nullptr;
-	ipv4Address = nullptr;
-	socketSubSystem = nullptr;
-	socket = nullptr;
+	
 }
 
 ReceiveDataWorker::ReceiveDataWorker(FCriticalSection& mutex, FString myoDriverIP, uint32 port, TArray<uint8>& receiveData)
@@ -126,6 +126,13 @@ uint32 ReceiveDataWorker::Run()
 		FPlatformProcess::Sleep(1.0f / 60.0f);
 	}
 
+	socket->Close();
+	delete address;
+	delete ipv4Address;
+	delete socket;
+	address = nullptr;
+	ipv4Address = nullptr;
+	socket = nullptr;
 	return 0;
 }
 
@@ -136,15 +143,7 @@ void ReceiveDataWorker::Stop()
 
 void ReceiveDataWorker::Exit()
 {
-	socket->Close();
-	delete address;
-	delete ipv4Address;
-	delete socketSubSystem;
-	delete socket;
-	address = nullptr;
-	ipv4Address = nullptr;
-	socketSubSystem = nullptr;
-	socket = nullptr;
+	
 }
 
 UDataCollector::UDataCollector(class FObjectInitializer const& objectInitializer)
@@ -229,46 +228,74 @@ void UDataCollector::Tick(float deltaTime)
 	MyoArm whichArm;
 	MyoArmDirection xDirection;
 	bool onPair = false, onConnect = false, onArmSync = false, onLock = true;
+
+	ConvertData(mutex, receiveData.GetData(), id, rotation, acceleration, gyro, emg, pose, 
+		whichArm, xDirection, onPair, onConnect, onArmSync, onLock);
+	auto index = MyoIndexForMyo(id);
+
+	if (index == -1 && onConnect)
+		OnConnect(id);
+	else if (index != -1 && !onConnect)
+		OnDisconnect(id);
+	if (index == -1 && onPair)
+		OnPair(id);
+	else if (index != -1 && !onPair)
+		OnUnpair(id);
+	if (index == -1 && onArmSync)
+		OnArmSync(id, whichArm, xDirection);
+	else if (index != -1 && !onArmSync)
+		OnArmUnsync(id);
+	if (index == -1)
+		onLock ? OnLock(id) : OnUnlock(id);
+	else if (index != -1)
 	{
-		FScopeLock lock(&mutex);
-		auto data = receiveData.GetData();
-		id = (static_cast<uint64>(data[0]) << 0) | (static_cast<uint64>(data[1]) << 8) | (static_cast<uint64>(data[2]) << 16) | (static_cast<uint64>(data[3]) << 24) |
-			(static_cast<uint64>(data[4]) << 32) | (static_cast<uint64>(data[5]) << 40) | (static_cast<uint64>(data[6]) << 48) | (static_cast<uint64>(data[7]) << 56);
-		uint32 rx = (static_cast<uint32>(data[8]) << 0) | (static_cast<uint32>(data[9]) << 8) | (static_cast<uint32>(data[10]) << 16) | (static_cast<uint32>(data[11]) << 24);
-		uint32 ry = (static_cast<uint32>(data[12]) << 0) | (static_cast<uint32>(data[13]) << 8) | (static_cast<uint32>(data[14]) << 16) | (static_cast<uint32>(data[15]) << 24);
-		uint32 rz = (static_cast<uint32>(data[16]) << 0) | (static_cast<uint32>(data[17]) << 8) | (static_cast<uint32>(data[18]) << 16) | (static_cast<uint32>(data[19]) << 24);
-		uint32 rw = (static_cast<uint32>(data[20]) << 0) | (static_cast<uint32>(data[21]) << 8) | (static_cast<uint32>(data[22]) << 16) | (static_cast<uint32>(data[23]) << 24);
-		rotation = FQuat(*reinterpret_cast<float*>(&rx), *reinterpret_cast<float*>(&ry), *reinterpret_cast<float*>(&rz), *reinterpret_cast<float*>(&rw));
-		uint32 ax = (static_cast<uint32>(data[24]) << 0) | (static_cast<uint32>(data[25]) << 8) | (static_cast<uint32>(data[26]) << 16) | (static_cast<uint32>(data[27]) << 24);
-		uint32 ay = (static_cast<uint32>(data[28]) << 0) | (static_cast<uint32>(data[29]) << 8) | (static_cast<uint32>(data[30]) << 16) | (static_cast<uint32>(data[31]) << 24);
-		uint32 az = (static_cast<uint32>(data[32]) << 0) | (static_cast<uint32>(data[33]) << 8) | (static_cast<uint32>(data[34]) << 16) | (static_cast<uint32>(data[35]) << 24);
-		acceleration = FVector(*reinterpret_cast<float*>(&ax), *reinterpret_cast<float*>(&ay), *reinterpret_cast<float*>(&az));
-		uint32 gx = (static_cast<uint32>(data[36]) << 0) | (static_cast<uint32>(data[37]) << 8) | (static_cast<uint32>(data[38]) << 16) | (static_cast<uint32>(data[39]) << 24);
-		uint32 gy = (static_cast<uint32>(data[40]) << 0) | (static_cast<uint32>(data[41]) << 8) | (static_cast<uint32>(data[42]) << 16) | (static_cast<uint32>(data[43]) << 24);
-		uint32 gz = (static_cast<uint32>(data[44]) << 0) | (static_cast<uint32>(data[45]) << 8) | (static_cast<uint32>(data[46]) << 16) | (static_cast<uint32>(data[47]) << 24);
-		gyro = FVector(*reinterpret_cast<float*>(&gx), *reinterpret_cast<float*>(&gy), *reinterpret_cast<float*>(&gz));
-		emg[0] = data[48];	emg[1] = data[49];	emg[2] = data[50];	emg[3] = data[51];
-		emg[4] = data[52];	emg[5] = data[53];	emg[6] = data[54];	emg[7] = data[55];
-		pose = static_cast<MyoPose>((data[56] & 0b11100000) >> 5);
-		whichArm = static_cast<MyoArm>((data[56] & 0b00011100) >> 2);
-		xDirection = static_cast<MyoArmDirection>((data[56] & 0b00000011) >> 0);
-		onPair = ((data[57] & 0b00001000) >> 3) == 1 ? true : false;
-		onConnect = ((data[57] & 0b00000100) >> 2) == 1 ? true : false;
-		onArmSync = ((data[57] & 0b00000010) >> 1) == 1 ? true : false;
-		onLock = ((data[57] & 0b00000001) >> 0) == 1 ? true : false;
+		if (Data[index].IsLocked != onLock)
+			onLock ? OnLock(id) : OnUnlock(id);
 	}
-	onConnect ? OnConnect(id) : OnDisconnect(id);
-	onArmSync ? OnArmSync(id, whichArm, xDirection) : OnArmUnsync(id);
-	onPair ? OnPair(id) : OnUnpair(id);
-	onLock ? OnLock(id) : OnUnlock(id);
 	if (onConnect && onArmSync && onPair)
 	{
 		OnOrientationData(id, rotation);
 		OnAccelerometerData(id, acceleration);
 		OnGyroscopeData(id, gyro);
-		OnPose(id, pose);
 		OnEmgData(id, emg);
+		if (index == -1)
+			OnPose(id, pose);
+		else if (index != 1)
+		{
+			if (Data[index].Pose != pose)
+				OnPose(id, pose);
+		}
 	}
+}
+
+void UDataCollector::ConvertData(FCriticalSection& mutex, uint8* data, uint64& id, FQuat& rot, FVector& accel, FVector& gyro, 
+	TArray<int8>& emg, MyoPose & pose, MyoArm & arm, MyoArmDirection & direction, bool& pair, bool& connect, bool& armSync, bool& lock)
+{
+	FScopeLock threadLock(&mutex);
+	id = (static_cast<uint64>(data[0]) << 0) | (static_cast<uint64>(data[1]) << 8) | (static_cast<uint64>(data[2]) << 16) | (static_cast<uint64>(data[3]) << 24) |
+		(static_cast<uint64>(data[4]) << 32) | (static_cast<uint64>(data[5]) << 40) | (static_cast<uint64>(data[6]) << 48) | (static_cast<uint64>(data[7]) << 56);
+	uint32 rx = (static_cast<uint32>(data[8]) << 0) | (static_cast<uint32>(data[9]) << 8) | (static_cast<uint32>(data[10]) << 16) | (static_cast<uint32>(data[11]) << 24);
+	uint32 ry = (static_cast<uint32>(data[12]) << 0) | (static_cast<uint32>(data[13]) << 8) | (static_cast<uint32>(data[14]) << 16) | (static_cast<uint32>(data[15]) << 24);
+	uint32 rz = (static_cast<uint32>(data[16]) << 0) | (static_cast<uint32>(data[17]) << 8) | (static_cast<uint32>(data[18]) << 16) | (static_cast<uint32>(data[19]) << 24);
+	uint32 rw = (static_cast<uint32>(data[20]) << 0) | (static_cast<uint32>(data[21]) << 8) | (static_cast<uint32>(data[22]) << 16) | (static_cast<uint32>(data[23]) << 24);
+	rot = FQuat(*reinterpret_cast<float*>(&rx), *reinterpret_cast<float*>(&ry), *reinterpret_cast<float*>(&rz), *reinterpret_cast<float*>(&rw));
+	uint32 ax = (static_cast<uint32>(data[24]) << 0) | (static_cast<uint32>(data[25]) << 8) | (static_cast<uint32>(data[26]) << 16) | (static_cast<uint32>(data[27]) << 24);
+	uint32 ay = (static_cast<uint32>(data[28]) << 0) | (static_cast<uint32>(data[29]) << 8) | (static_cast<uint32>(data[30]) << 16) | (static_cast<uint32>(data[31]) << 24);
+	uint32 az = (static_cast<uint32>(data[32]) << 0) | (static_cast<uint32>(data[33]) << 8) | (static_cast<uint32>(data[34]) << 16) | (static_cast<uint32>(data[35]) << 24);
+	accel = FVector(*reinterpret_cast<float*>(&ax), *reinterpret_cast<float*>(&ay), *reinterpret_cast<float*>(&az));
+	uint32 gx = (static_cast<uint32>(data[36]) << 0) | (static_cast<uint32>(data[37]) << 8) | (static_cast<uint32>(data[38]) << 16) | (static_cast<uint32>(data[39]) << 24);
+	uint32 gy = (static_cast<uint32>(data[40]) << 0) | (static_cast<uint32>(data[41]) << 8) | (static_cast<uint32>(data[42]) << 16) | (static_cast<uint32>(data[43]) << 24);
+	uint32 gz = (static_cast<uint32>(data[44]) << 0) | (static_cast<uint32>(data[45]) << 8) | (static_cast<uint32>(data[46]) << 16) | (static_cast<uint32>(data[47]) << 24);
+	gyro = FVector(*reinterpret_cast<float*>(&gx), *reinterpret_cast<float*>(&gy), *reinterpret_cast<float*>(&gz));
+	emg[0] = data[48];	emg[1] = data[49];	emg[2] = data[50];	emg[3] = data[51];
+	emg[4] = data[52];	emg[5] = data[53];	emg[6] = data[54];	emg[7] = data[55];
+	pose = static_cast<MyoPose>((data[56] & 0b11100000) >> 5);
+	arm = static_cast<MyoArm>((data[56] & 0b00011100) >> 2);
+	direction = static_cast<MyoArmDirection>((data[56] & 0b00000011) >> 0);
+	pair = ((data[57] & 0b00001000) >> 3) == 1 ? true : false;
+	connect = ((data[57] & 0b00000100) >> 2) == 1 ? true : false;
+	armSync = ((data[57] & 0b00000010) >> 1) == 1 ? true : false;
+	lock = ((data[57] & 0b00000001) >> 0) == 1 ? true : false;
 }
 
 void UDataCollector::OnConnect(uint64 myoId)
@@ -358,6 +385,9 @@ void UDataCollector::OnOrientationData(uint64 myoId, FQuat& quat)
 			EmitAnalogInputEventForKey(EMyoKeys::OrientationRoll, Data[myoIndex].ArmOrientation.Roll * OrientationScale.Roll, 0);
 		}
 	}
+	//UE_LOG(LogTemp, Warning, TEXT("Orientation: { Pitch: %f, Yaw: %f, Roll: %f } ArmOrientation { Pitch: %f, Yaw: %f, Roll: %f }"),
+	//	Data[myoIndex].Orientation.Pitch, Data[myoIndex].Orientation.Yaw, Data[myoIndex].Orientation.Roll,
+	//	Data[myoIndex].ArmOrientation.Pitch, Data[myoIndex].ArmOrientation.Yaw, Data[myoIndex].ArmOrientation.Roll);
 }
 
 void UDataCollector::OnAccelerometerData(uint64 myoId, FVector& accel)
@@ -417,7 +447,7 @@ void UDataCollector::OnPose(uint64 myoId, MyoPose pose)
 {
 	auto myoIndex = MyoIndexForMyo(myoId);
 	Data[myoIndex].Pose = pose;
-	UE_LOG(MyoPluginLog, Log, TEXT("Myo %d switched to pose %s."), IdentifyMyo(myoId), *FString::FromInt(static_cast<int32>(pose)));
+	UE_LOG(MyoPluginLog, Log, TEXT("Myo %d switched to pose %s."), IdentifyMyo(myoId), *ConvertPoseToString(pose));
 	if (MyoDelegate)
 	{
 		MyoDelegate->OnPose(myoIndex + 1, pose);
@@ -496,20 +526,20 @@ bool UDataCollector::Startup()
 
 void UDataCollector::ShutDown()
 {
-	if (sendDataWorker != nullptr)
-		sendDataWorker->Stop();
-	if (receiveDataWorker != nullptr)
-		receiveDataWorker->Stop();
 	if (sendThread != nullptr)
 	{
+		sendDataWorker->Stop();
 		sendThread->WaitForCompletion();
-		sendThread->Kill();
+		delete sendThread;
+		sendThread = nullptr;
 	}
 	if (receiveThread != nullptr)
 	{
+		receiveDataWorker->Stop();
 		receiveThread->WaitForCompletion();
-		receiveThread->Kill();
-	}
+		delete receiveThread;
+		receiveThread = nullptr;
+	}	
 	if (sendDataWorker != nullptr)
 	{
 		delete sendDataWorker;
@@ -519,16 +549,6 @@ void UDataCollector::ShutDown()
 	{
 		delete receiveDataWorker;
 		receiveDataWorker = nullptr;
-	}
-	if (sendThread != nullptr)
-	{
-		delete sendThread;
-		sendThread = nullptr;
-	}
-	if (receiveThread != nullptr)
-	{
-		delete receiveThread;
-		receiveThread = nullptr;
 	}
 }
 
@@ -595,6 +615,28 @@ FRotator ConvertOrientationToArmSpace(FRotator convertedOrientation, FRotator ar
 		directionModifier = -1.0f;
 		convertedOrientation = FRotator(convertedOrientation.Pitch * directionModifier, convertedOrientation.Yaw, convertedOrientation.Roll * directionModifier);
 	}
-	auto tempRot = UDataCollector::CombineRotators(FRotator(0.0f, 0.0f, armCorrection.Roll*directionModifier), convertedOrientation);
+	auto tempRot = UDataCollector::CombineRotators(FRotator(0.0f, 0.0f, armCorrection.Roll * directionModifier), convertedOrientation);
 	return UDataCollector::CombineRotators(tempRot, FRotator(0.0f, armCorrection.Yaw, 0.0f));
+}
+
+FString ConvertPoseToString(MyoPose pose)
+{
+	switch (pose)
+	{
+	case MyoPose::Rest:
+		return FString("Rest");
+	case MyoPose::Fist:
+		return FString("Fist");
+	case MyoPose::WaveIn:
+		return FString("WaveIn");
+	case MyoPose::WaveOut:
+		return FString("WaveOut");
+	case MyoPose::FingerSpread:
+		return FString("FingerSpread");
+	case MyoPose::DoubleTap:
+		return FString("DoubleTap");
+	case MyoPose::Unknown:
+		return FString("Unknown");
+	}
+	return FString("");
 }

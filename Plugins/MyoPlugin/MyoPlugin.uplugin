@@ -15,7 +15,7 @@
 	[
 		{
 			"Name" : "MyoPlugin",
-      "Type": "Developer",
+      "Type": "Runtime",
       "LoadingPhase": "PreDefault"
 		}
 	]

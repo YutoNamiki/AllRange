@@ -85,6 +85,14 @@ bool MyoConnecter::GetInputEscapeKey()
 			udpSocket->SetIsFinish(true);
 			return true;
 		}
+		else if (key == 0x52 || key == 0x72)
+		{
+			mutex->lock();
+			system("cls");
+			std::cout << LogString << "ログをリフレッシュしました。" << std::endl;
+			std::cout << LogString << "終了したい場合はEscキーを押してください。" << std::endl;
+			mutex->unlock();
+		}
 	}
 	return false;
 }
