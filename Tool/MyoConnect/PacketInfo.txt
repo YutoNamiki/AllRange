@@ -79,3 +79,4 @@ char[57]: [][][][]-[OnPair][OnConnect][OnArmSync][OnLock]
 ・バイブレーション
 ・アンロックタイプ
 ・ロック
+・ロッキングポリシー

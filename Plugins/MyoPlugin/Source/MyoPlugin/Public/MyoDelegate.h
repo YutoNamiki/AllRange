@@ -115,18 +115,18 @@ class IMyoDelegate
 {
 	GENERATED_IINTERFACE_BODY()
 
-	virtual void OnConnect(int32 myoId, uint64 timestamp);
-	virtual void OnDisconnect(int32 myoId, uint64 timestamp);
-	virtual void OnPair(int32 myoId, uint64 timestamp);
-	virtual void OnUnpair(int32 myoId, uint64 timestamp);
+	virtual void OnConnect(int32 myoId);
+	virtual void OnDisconnect(int32 myoId);
+	virtual void OnPair(int32 myoId);
+	virtual void OnUnpair(int32 myoId);
 	virtual void OnArmMoved(int32 myoId, FVector armAcceleration, FRotator armOrientation, FVector armGyro, MyoPose pose);
-	virtual void OnOrientationData(int32 myoId, uint64 timestamp, FQuat quat);
-	virtual void OnOrientationData(int32 myoId, uint64 timestamp, FRotator rot);
-	virtual void OnAccelerometerData(int32 myoId, uint64 timestamp, FVector accel);
-	virtual void OnGyroscopeData(int32 myoId, uint64 timestamp, FVector gyro);
-	virtual void OnPose(int32 myoId, uint64 timestamp, MyoPose pose);
-	virtual void OnArmSync(int32 myoId, uint64 timestamp, MyoArm arm, MyoArmDirection direction);
-	virtual void OnArmUnsync(int32 myoId, uint64 timestamp);
+	virtual void OnOrientationData(int32 myoId, FQuat quat);
+	virtual void OnOrientationData(int32 myoId, FRotator rot);
+	virtual void OnAccelerometerData(int32 myoId, FVector accel);
+	virtual void OnGyroscopeData(int32 myoId, FVector gyro);
+	virtual void OnPose(int32 myoId, MyoPose pose);
+	virtual void OnArmSync(int32 myoId, MyoArm arm, MyoArmDirection direction);
+	virtual void OnArmUnsync(int32 myoId);
 	virtual void OnEmgData(int32 myoId, FMyoEmgData data);
 	virtual void MyoDisabled();
 	virtual void MyoVibrateDevice(int32 myoId, MyoVibrationType type);

@@ -6,18 +6,18 @@
 DEFINE_LOG_CATEGORY(MyoPluginLog);
 
 UMyoDelegate::UMyoDelegate(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) { }
-void IMyoDelegate::OnConnect(int32 myoId, uint64 timestamp) { }
-void IMyoDelegate::OnDisconnect(int32 myoId, uint64 timestamp) { }
-void IMyoDelegate::OnPair(int32 myoId, uint64 timestamp) { }
-void IMyoDelegate::OnUnpair(int32 myoId, uint64 timestamp) { }
+void IMyoDelegate::OnConnect(int32 myoId) { }
+void IMyoDelegate::OnDisconnect(int32 myoId) { }
+void IMyoDelegate::OnPair(int32 myoId) { }
+void IMyoDelegate::OnUnpair(int32 myoId) { }
 void IMyoDelegate::OnArmMoved(int32 myoId, FVector armAcceleration, FRotator armOrientation, FVector armGyro, MyoPose pose) { }
-void IMyoDelegate::OnOrientationData(int32 myoId, uint64 timestamp, FQuat quat) { }
-void IMyoDelegate::OnOrientationData(int32 myoId, uint64 timestamp, FRotator rot) { }
-void IMyoDelegate::OnAccelerometerData(int32 myoId, uint64 timestamp, FVector accel) { }
-void IMyoDelegate::OnGyroscopeData(int32 myoId, uint64 timestamp, FVector gyro) { }
-void IMyoDelegate::OnPose(int32 myoId, uint64 timestamp, MyoPose pose) { }
-void IMyoDelegate::OnArmSync(int32 myoId, uint64 timestamp, MyoArm arm, MyoArmDirection direction) { }
-void IMyoDelegate::OnArmUnsync(int32 myoId, uint64 timestamp) { }
+void IMyoDelegate::OnOrientationData(int32 myoId, FQuat quat) { }
+void IMyoDelegate::OnOrientationData(int32 myoId, FRotator rot) { }
+void IMyoDelegate::OnAccelerometerData(int32 myoId, FVector accel) { }
+void IMyoDelegate::OnGyroscopeData(int32 myoId, FVector gyro) { }
+void IMyoDelegate::OnPose(int32 myoId, MyoPose pose) { }
+void IMyoDelegate::OnArmSync(int32 myoId, MyoArm arm, MyoArmDirection direction) { }
+void IMyoDelegate::OnArmUnsync(int32 myoId) { }
 void IMyoDelegate::OnEmgData(int32 myoId, FMyoEmgData data) { }
 void IMyoDelegate::MyoDisabled() { }
 

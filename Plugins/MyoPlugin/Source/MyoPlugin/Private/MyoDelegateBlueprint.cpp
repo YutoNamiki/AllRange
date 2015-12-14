@@ -98,19 +98,19 @@ bool IMyoDelegateBlueprint::IsValidDelegate()
 	return (InterfaceDelegate != nullptr);
 }
 
-void IMyoDelegateBlueprint::OnConnect(int32 myoId, uint64 timestamp)
+void IMyoDelegateBlueprint::OnConnect(int32 myoId)
 {
 	if (MyoIsValidId(myoId))
 		IMyoInterface::Execute_OnConnect(InterfaceDelegate, InternalControllerForId(myoId));
 }
 
-void IMyoDelegateBlueprint::OnDisconnect(int32 myoId, uint64 timestamp)
+void IMyoDelegateBlueprint::OnDisconnect(int32 myoId)
 {
 	if (MyoIsValidId(myoId))
 		IMyoInterface::Execute_OnDisconnect(InterfaceDelegate, InternalControllerForId(myoId));
 }
 
-void IMyoDelegateBlueprint::OnPair(int32 myoId, uint64 timestamp)
+void IMyoDelegateBlueprint::OnPair(int32 myoId)
 {
 	if (myoId > LatestFrame.Num())
 		InternalAddController(myoId);
@@ -118,7 +118,7 @@ void IMyoDelegateBlueprint::OnPair(int32 myoId, uint64 timestamp)
 		IMyoInterface::Execute_OnPair(InterfaceDelegate, InternalControllerForId(myoId));
 }
 
-void IMyoDelegateBlueprint::OnUnpair(int32 myoId, uint64 timestamp)
+void IMyoDelegateBlueprint::OnUnpair(int32 myoId)
 {
 	if (MyoIsValidId(myoId))
 		IMyoInterface::Execute_OnUnpair(InterfaceDelegate, InternalControllerForId(myoId));
@@ -130,37 +130,37 @@ void IMyoDelegateBlueprint::OnArmMoved(int32 myoId, FVector armAcceleration, FRo
 		IMyoInterface::Execute_OnArmMoved(InterfaceDelegate, InternalControllerForId(myoId), armAcceleration, armOrientation, armGyro, pose);
 }
 
-void IMyoDelegateBlueprint::OnOrientationData(int32 myoId, uint64 timestamp, FRotator rot)
+void IMyoDelegateBlueprint::OnOrientationData(int32 myoId, FRotator rot)
 {
 	if (MyoIsValidId(myoId))
 		IMyoInterface::Execute_OnOrientationData(InterfaceDelegate, InternalControllerForId(myoId), rot);
 }
 
-void IMyoDelegateBlueprint::OnAccelerometerData(int32 myoId, uint64 timestamp, FVector accel)
+void IMyoDelegateBlueprint::OnAccelerometerData(int32 myoId, FVector accel)
 {
 	if (MyoIsValidId(myoId))
 		IMyoInterface::Execute_OnAccelerometerData(InterfaceDelegate, InternalControllerForId(myoId), accel);
 }
 
-void IMyoDelegateBlueprint::OnGyroscopeData(int32 myoId, uint64 timestamp, FVector gyro)
+void IMyoDelegateBlueprint::OnGyroscopeData(int32 myoId, FVector gyro)
 {
 	if (MyoIsValidId(myoId))
 		IMyoInterface::Execute_OnGyroscopeData(InterfaceDelegate, InternalControllerForId(myoId), gyro);
 }
 
-void IMyoDelegateBlueprint::OnPose(int32 myoId, uint64 timestamp, MyoPose pose)
+void IMyoDelegateBlueprint::OnPose(int32 myoId, MyoPose pose)
 {
 	if (MyoIsValidId(myoId))
 		IMyoInterface::Execute_OnPose(InterfaceDelegate, InternalControllerForId(myoId), pose);
 }
 
-void IMyoDelegateBlueprint::OnArmSync(int32 myoId, uint64 timestamp, MyoArm arm, MyoArmDirection direction)
+void IMyoDelegateBlueprint::OnArmSync(int32 myoId, MyoArm arm, MyoArmDirection direction)
 {
 	if (MyoIsValidId(myoId))
 		IMyoInterface::Execute_OnArmSync(InterfaceDelegate, InternalControllerForId(myoId), arm, direction);
 }
 
-void IMyoDelegateBlueprint::OnArmUnsync(int32 myoId, uint64 timestamp)
+void IMyoDelegateBlueprint::OnArmUnsync(int32 myoId)
 {
 	if (MyoIsValidId(myoId))
 		IMyoInterface::Execute_OnArmUnsync(InterfaceDelegate, InternalControllerForId(myoId));

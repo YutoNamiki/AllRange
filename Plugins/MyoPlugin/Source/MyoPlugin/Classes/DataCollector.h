@@ -74,7 +74,7 @@ public:
 	UPROPERTY()
 	bool Listening;
 	UPROPERTY()
-	MyoLockingPolicy LockingPolicy;
+	MyoLockingPolicy LockingPolicy = MyoLockingPolicy::Standard;
 	UPROPERTY()
 	MyoPose LastPose;
 	UPROPERTY()
@@ -87,34 +87,34 @@ public:
 	UDataCollector(class FObjectInitializer const& objectInitializer);
 	~UDataCollector();
 
-	//void PressPose(myo::Pose pose);
-	//void ReleasePose(myo::Pose pose);
+	void PressPose(MyoPose pose);
+	void ReleasePose(MyoPose pose);
 	void Tick(float deltaTime);
-	void OnConnect();
-	void OnDisconnect();
-	void OnArmSync();
-	void OnArmUnsync();
-	void OnPair();
-	void OnUnpair();
-	void OnOrientationData();
-	void OnAccelerometerData();
-	void OnGyroscopeData();
-	void OnUnlock();
-	void OnLock();
-	void OnPose();
-	void OnEmgData();
-	//int32 IdentifyMyo(myo::Myo* myo);
-	//myo::Myo* LastValidMyo();
-	//bool MyoIsValidForInputMapping(myo::Myo* myo);
-	//int32 MyoIndexForMyo(myo::Myo* myo);
-	//void StartListening();
-	//void StopListening();
-	//void UnlockHoldEachMyo();
-	//void LockEachMyo();
+	void OnConnect(uint64 myoId);
+	void OnDisconnect(uint64 myoId);
+	void OnArmSync(uint64 myoId, MyoArm arm, MyoArmDirection xDirection);
+	void OnArmUnsync(uint64 myoId);
+	void OnPair(uint64 myoId);
+	void OnUnpair(uint64 myoId);
+	void OnOrientationData(uint64 myoId, FRotator& rotation);
+	void OnAccelerometerData(uint64 myoId, FVector& accel);
+	void OnGyroscopeData(uint64 myoId, FVector& gyro);
+	void OnUnlock(uint64 myoId);
+	void OnLock(uint64 myoId);
+	void OnPose(uint64 myoId, MyoPose pose);
+	void OnEmgData(uint64 myoId, TArray<int8>& emg);
+	int32 IdentifyMyo(uint64 myoId);
+	uint64 LastValidMyo();
+	bool MyoIsValidForInputMapping(uint64 myoId);
+	int32 MyoIndexForMyo(uint64 myoId);
+	void StartListening();
+	void StopListening();
+	void UnlockHoldEachMyo();
+	void LockEachMyo();
 	bool Startup();
 	void ShutDown();
 	void ResetHub();
-	//void SetLockingPolicy(myo::Hub::LockingPolicy policy);
+	void SetLockingPolicy(MyoLockingPolicy policy);
 
 private:
 	FString myoDriverIP = "127.0.0.1";

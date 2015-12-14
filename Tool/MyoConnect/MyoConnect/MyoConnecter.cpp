@@ -41,6 +41,7 @@ bool MyoConnecter::Initializer()
 		return false;
 	}
 	hub->addListener(collector.get());
+	hub->setLockingPolicy(myo::Hub::LockingPolicy::lockingPolicyNone);
 	auto myo = hub->waitForMyo(10000);
 	myo->setStreamEmg(myo::Myo::streamEmgEnabled);
 	collector->KnownMyos.push_back(myo);
