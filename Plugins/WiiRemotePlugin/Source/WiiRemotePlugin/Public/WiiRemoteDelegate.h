@@ -259,9 +259,9 @@ class IWiiRemoteDelegate
 	virtual void OnExtensionDisconnected(int32 wiiRemoteId);
 	virtual void SetLED(unsigned char ledBits);
 	virtual void SetRumble(bool on);
-	virtual void SetRumbleForAsync(unsigned int milliseconds);
+	virtual void SetRumbleForAsync(int32 milliseconds);
 	virtual void MuteSpeaker(bool on);
-	virtual void PlaySquareWave(WiiRemoteSpeakerFrequency frequency, unsigned char volume);
-	virtual void PlaySample(WiiRemoteSpeakerFrequency frequency, unsigned char volume);
+	virtual void PlaySquareWave(WiiRemoteSpeakerFrequency frequency, int32 volume);
+	virtual void PlaySample(WiiRemoteSpeakerFrequency frequency, int32 volume);
 	virtual void Tick(float deltaTime);
 };

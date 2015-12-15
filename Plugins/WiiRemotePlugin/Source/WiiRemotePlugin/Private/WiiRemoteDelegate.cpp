@@ -43,7 +43,7 @@ void IWiiRemoteDelegate::SetRumble(bool on)
 
 }
 
-void IWiiRemoteDelegate::SetRumbleForAsync(unsigned int milliseconds)
+void IWiiRemoteDelegate::SetRumbleForAsync(int32 milliseconds)
 {
 
 }
@@ -53,12 +53,12 @@ void IWiiRemoteDelegate::MuteSpeaker(bool on)
 
 }
 
-void IWiiRemoteDelegate::PlaySquareWave(WiiRemoteSpeakerFrequency frequency, unsigned char volume)
+void IWiiRemoteDelegate::PlaySquareWave(WiiRemoteSpeakerFrequency frequency, int32 volume)
 {
 
 }
 
-void IWiiRemoteDelegate::PlaySample(WiiRemoteSpeakerFrequency frequency, unsigned char volume)
+void IWiiRemoteDelegate::PlaySample(WiiRemoteSpeakerFrequency frequency, int32 volume)
 {
 
 }

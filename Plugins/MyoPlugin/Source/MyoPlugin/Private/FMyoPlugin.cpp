@@ -32,22 +32,22 @@ void FMyoPlugin::StartupModule()
 {
 	UE_LOG(MyoPluginLog, Log, TEXT("Using Myo Plugin version %s"), *PluginVersion);
 	collector = NewObject<UDataCollector>();
-	EKeys::AddKey(FKeyDetails(EMyoKeys::PoseRest, LOCTEXT("MyoPoseRest", "Myo Pose Rest"), FKeyDetails::GamepadKey));
-	EKeys::AddKey(FKeyDetails(EMyoKeys::PoseFist, LOCTEXT("MyoPoseFist", "Myo Pose Fist"), FKeyDetails::GamepadKey));
-	EKeys::AddKey(FKeyDetails(EMyoKeys::PoseWaveIn, LOCTEXT("MyoPoseWaveIn", "Myo Pose Wave In"), FKeyDetails::GamepadKey));
-	EKeys::AddKey(FKeyDetails(EMyoKeys::PoseWaveOut, LOCTEXT("MyoPoseWaveOut", "Myo Pose Wave Out"), FKeyDetails::GamepadKey));
-	EKeys::AddKey(FKeyDetails(EMyoKeys::PoseFingersSpread, LOCTEXT("MyoPoseFingersSpread", "Myo Pose FingersSpread"), FKeyDetails::GamepadKey));
-	EKeys::AddKey(FKeyDetails(EMyoKeys::PoseDoubleTap, LOCTEXT("MyoPoseDoubleTap", "Myo Pose Double Tap"), FKeyDetails::GamepadKey));
-	EKeys::AddKey(FKeyDetails(EMyoKeys::PoseUnknown, LOCTEXT("MyoPoseUnknown", "Myo Pose Unknown"), FKeyDetails::GamepadKey));
-	EKeys::AddKey(FKeyDetails(EMyoKeys::AccelerationX, LOCTEXT("MyoAccelerationX", "Myo Acceleration X"), FKeyDetails::FloatAxis));
-	EKeys::AddKey(FKeyDetails(EMyoKeys::AccelerationY, LOCTEXT("MyoAccelerationY", "Myo Acceleration Y"), FKeyDetails::FloatAxis));
-	EKeys::AddKey(FKeyDetails(EMyoKeys::AccelerationZ, LOCTEXT("MyoAccelerationZ", "Myo Acceleration Z"), FKeyDetails::FloatAxis));
-	EKeys::AddKey(FKeyDetails(EMyoKeys::OrientationPitch, LOCTEXT("MyoOrientationPitch", "Myo Orientation Pitch"), FKeyDetails::FloatAxis));
-	EKeys::AddKey(FKeyDetails(EMyoKeys::OrientationYaw, LOCTEXT("MyoOrientationYaw", "Myo Orientation Yaw"), FKeyDetails::FloatAxis));
-	EKeys::AddKey(FKeyDetails(EMyoKeys::OrientationRoll, LOCTEXT("MyoOrientationRoll", "Myo Orientation Roll"), FKeyDetails::FloatAxis));
-	EKeys::AddKey(FKeyDetails(EMyoKeys::GyroX, LOCTEXT("MyoGyroX", "Myo Gyro X"), FKeyDetails::FloatAxis));
-	EKeys::AddKey(FKeyDetails(EMyoKeys::GyroY, LOCTEXT("MyoGyroY", "Myo Gyro Y"), FKeyDetails::FloatAxis));
-	EKeys::AddKey(FKeyDetails(EMyoKeys::GyroZ, LOCTEXT("MyoGyroZ", "Myo Gyro Z"), FKeyDetails::FloatAxis));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::PoseRest, LOCTEXT("MyoPoseRest", "Myo Pose Rest"), FKeyDetails::GamepadKey, FName("MyoArmband")));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::PoseFist, LOCTEXT("MyoPoseFist", "Myo Pose Fist"), FKeyDetails::GamepadKey, FName("MyoArmband")));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::PoseWaveIn, LOCTEXT("MyoPoseWaveIn", "Myo Pose Wave In"), FKeyDetails::GamepadKey, FName("MyoArmband")));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::PoseWaveOut, LOCTEXT("MyoPoseWaveOut", "Myo Pose Wave Out"), FKeyDetails::GamepadKey, FName("MyoArmband")));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::PoseFingersSpread, LOCTEXT("MyoPoseFingersSpread", "Myo Pose FingersSpread"), FKeyDetails::GamepadKey, FName("MyoArmband")));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::PoseDoubleTap, LOCTEXT("MyoPoseDoubleTap", "Myo Pose Double Tap"), FKeyDetails::GamepadKey, FName("MyoArmband")));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::PoseUnknown, LOCTEXT("MyoPoseUnknown", "Myo Pose Unknown"), FKeyDetails::GamepadKey, FName("MyoArmband")));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::AccelerationX, LOCTEXT("MyoAccelerationX", "Myo Acceleration X"), FKeyDetails::FloatAxis, FName("MyoArmband")));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::AccelerationY, LOCTEXT("MyoAccelerationY", "Myo Acceleration Y"), FKeyDetails::FloatAxis, FName("MyoArmband")));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::AccelerationZ, LOCTEXT("MyoAccelerationZ", "Myo Acceleration Z"), FKeyDetails::FloatAxis, FName("MyoArmband")));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::OrientationPitch, LOCTEXT("MyoOrientationPitch", "Myo Orientation Pitch"), FKeyDetails::FloatAxis, FName("MyoArmband")));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::OrientationYaw, LOCTEXT("MyoOrientationYaw", "Myo Orientation Yaw"), FKeyDetails::FloatAxis, FName("MyoArmband")));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::OrientationRoll, LOCTEXT("MyoOrientationRoll", "Myo Orientation Roll"), FKeyDetails::FloatAxis, FName("MyoArmband")));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::GyroX, LOCTEXT("MyoGyroX", "Myo Gyro X"), FKeyDetails::FloatAxis, FName("MyoArmband")));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::GyroY, LOCTEXT("MyoGyroY", "Myo Gyro Y"), FKeyDetails::FloatAxis, FName("MyoArmband")));
+	EKeys::AddKey(FKeyDetails(EMyoKeys::GyroZ, LOCTEXT("MyoGyroZ", "Myo Gyro Z"), FKeyDetails::FloatAxis, FName("MyoArmband")));
 }
 
 void FMyoPlugin::ShutdownModule()

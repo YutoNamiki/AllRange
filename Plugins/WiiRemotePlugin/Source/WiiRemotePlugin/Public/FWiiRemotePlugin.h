@@ -2,6 +2,8 @@
 
 #include "IWiiRemotePlugin.h"
 
+class UWiiRemoteManager;
+
 struct EWiiRemoteKeys
 {
 	static const FKey A;
@@ -97,8 +99,20 @@ struct EWiiRemoteMotionPlusKeys
 class FWiiRemotePlugin : public IWiiRemotePlugin
 {
 public:
-
-
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+	virtual void SetDelegate(IWiiRemoteDelegate* newDelegate) override;
+	virtual void RemoveDelgate() override;
+	virtual void Tick(float deltaTime) override;
+	virtual void SetRumble(bool on) override;
+	virtual void SetRumbleForAsync(int32 milliseconds) override;
+	virtual void MuteSpeaker(bool on) override;
+	virtual void PlaySquareWave(WiiRemoteSpeakerFrequency frequency, int32 volume) override;
+	virtual void PlaySample(WiiRemoteSpeakerFrequency frequency, int32 volume) override;
+	virtual FWiiRemoteDeviceData* LatestData(int32 wiiRemoteId) override;
+	virtual void MaxWiiRemoteId(int32& wiiRemoteId) override;
+	virtual bool IsValidDeviceId(int32 deviceId) override;
+
+private:
+	UWiiRemoteManager* wiiRemoteManager;
 };
