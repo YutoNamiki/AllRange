@@ -5,7 +5,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(WiiRemotePluginLog, Log, All);
 
 UENUM(BlueprintType)
-enum class SpeakerFrequency : uint8
+enum class WiiRemoteSpeakerFrequency : uint8
 {
 	FreqNone	UMETA(DisplayName = "FreqNone"),
 	Freq4200Hz	UMETA(DisplayName = "Freq4200Hz"),
@@ -17,6 +17,26 @@ enum class SpeakerFrequency : uint8
 	Freq2760Hz	UMETA(DisplayName = "Freq2760Hz"),
 	Freq2610Hz	UMETA(DisplayName = "Freq2610Hz"),
 	Freq2470Hz	UMETA(DisplayName = "Freq2470Hz")
+};
+
+UENUM(BlueprintType)
+enum class WiiRemoteLED : uint8
+{
+	XXXX	UMETA(DisplayName = "XXXX"),
+	XXXO	UMETA(DisplayName = "XXXO"),
+	XXOX	UMETA(DisplayName = "XXOX"),
+	XXOO	UMETA(DisplayName = "XXOO"),
+	XOXX	UMETA(DisplayName = "XOXX"),
+	XOXO	UMETA(DisplayName = "XOXO"),
+	XOOX	UMETA(DisplayName = "XOOX"),
+	XOOO	UMETA(DisplayName = "XOOO"),
+	OXXX	UMETA(DisplayName = "OXXX"),
+	OXXO	UMETA(DisplayName = "OXXO"),
+	OXOX	UMETA(DisplayName = "OXOX"),
+	OXOO	UMETA(DisplayName = "OXOO"),
+	OOXX	UMETA(DisplayName = "OOXX"),
+	OOXO	UMETA(DisplayName = "OOXO"),
+	OOOO	UMETA(DisplayName = "OOOO")
 };
 
 USTRUCT(BlueprintType)
@@ -185,9 +205,9 @@ struct FWiiRemoteDeviceData
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
 	FWiiRemoteBalanceBoard BalanceBoard;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
-	FRotator PlusSpeed = FRotator::ZeroRotator;
+	FRotator MotionPlusSpeed = FRotator::ZeroRotator;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
-	int32 LED;
+	WiiRemoteLED LED;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
 	bool IsRumble = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
@@ -210,38 +230,38 @@ class IWiiRemoteDelegate
 {
 	GENERATED_IINTERFACE_BODY()
 
-	virtual void OnConnected();
-	virtual void OnCennectionLost();
-	virtual void OnBatteryChanged();
-	virtual void OnBatteryDrained();
-	virtual void OnLEDsChanged();
-	virtual void OnButtonsChanged();
-	virtual void OnAccelChanged();
-	virtual void OnOrientationChanged();
-	virtual void OnIRChanged();
-	virtual void OnNunchukConnected();
-	virtual void OnNunchukButtonsChanged();
-	virtual void OnNunchukAccelChanged();
-	virtual void OnNunchukOrientationChanged();
-	virtual void OnNunchukJoystickChanged();
-	virtual void OnClassicConnected();
-	virtual void OnClassicButtonsChanged();
-	virtual void OnClassicJoystickLChanged();
-	virtual void OnClassicJoystickRChanged();
-	virtual void OnClassicTriggersChanged();
-	virtual void OnBalanceConnected();
-	virtual void OnBalanceWeightChanged();
-	virtual void OnMotionPlusDetected();
-	virtual void OnMotionPlusEnabled();
-	virtual void OnMotionPlusSpeedChanged();
-	virtual void OnMotionPlusExtensionConnected();
-	virtual void OnMotionPlusExtensionDisconnected();
-	virtual void OnExtensionDisconnected();
+	virtual void OnConnected(int32 wiiRemoteId);
+	virtual void OnCennectionLost(int32 wiiRemoteId);
+	virtual void OnBatteryChanged(int32 wiiRemoteId, int32 batteryPercent);
+	virtual void OnBatteryDrained(int32 wiiRemoteId);
+	virtual void OnLEDsChanged(int32 wiiRemoteId, WiiRemoteLED led);
+	virtual void OnButtonsChanged(int32 wiiRemoteId, FWiiRemoteButtons buttons);
+	virtual void OnAccelChanged(int32 wiiRemoteId, FVector accel);
+	virtual void OnOrientationChanged(int32 wiiRemoteId, float pitch, float roll);
+	virtual void OnIRChanged(int32 wiiRemoteId, TArray<FWiiRemoteDot> dots);
+	virtual void OnNunchukConnected(int32 wiiRemoteId);
+	virtual void OnNunchukButtonsChanged(int32 wiiRemoteId, FWiiRemoteNunchukButtons buttons);
+	virtual void OnNunchukAccelChanged(int32 wiiRemoteId, FVector accel);
+	virtual void OnNunchukOrientationChanged(int32 wiiRemoteId, float pitch, float roll);
+	virtual void OnNunchukJoystickChanged(int32 wiiRemoteId, float x, float y);
+	virtual void OnClassicConnected(int32 wiiRemoteId);
+	virtual void OnClassicButtonsChanged(int32 wiiRemoteId, FWiiRemoteClassicControllerButtons buttons);
+	virtual void OnClassicJoystickLChanged(int32 wiiRemoteId, float x, float y);
+	virtual void OnClassicJoystickRChanged(int32 wiiRemoteId, float x, float y);
+	virtual void OnClassicTriggersChanged(int32 wiiRemoteId, float left, float right);
+	virtual void OnBalanceConnected(int32 wiiRemoteId);
+	virtual void OnBalanceWeightChanged(int32 wiiRemoteId, FWiiRemoteBalanceBoard balanceBoard);
+	virtual void OnMotionPlusDetected(int32 wiiRemoteId);
+	virtual void OnMotionPlusEnabled(int32 wiiRemoteId);
+	virtual void OnMotionPlusSpeedChanged(int32 wiiRemoteId, FRotator speed);
+	virtual void OnMotionPlusExtensionConnected(int32 wiiRemoteId);
+	virtual void OnMotionPlusExtensionDisconnected(int32 wiiRemoteId);
+	virtual void OnExtensionDisconnected(int32 wiiRemoteId);
 	virtual void SetLED(unsigned char ledBits);
 	virtual void SetRumble(bool on);
 	virtual void SetRumbleForAsync(unsigned int milliseconds);
 	virtual void MuteSpeaker(bool on);
-	virtual void PlaySquareWave(SpeakerFrequency frequency, unsigned char volume);
-	virtual void PlaySample(SpeakerFrequency frequency, unsigned char volume);
+	virtual void PlaySquareWave(WiiRemoteSpeakerFrequency frequency, unsigned char volume);
+	virtual void PlaySample(WiiRemoteSpeakerFrequency frequency, unsigned char volume);
 	virtual void Tick(float deltaTime);
 };
