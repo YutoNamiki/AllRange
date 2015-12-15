@@ -49,32 +49,107 @@ struct FWiiRemoteButtons
 };
 
 USTRUCT(BlueprintType)
+struct FWiiRemoteDot
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteDot")
+	bool bVisible;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteDot")
+	float X;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteDot")
+	float Y;
+};
+
+USTRUCT(BlueprintType)
+struct FWiiRemoteNunchukButtons
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteNunchukButtons")
+	bool IsPushC = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteNunchukButtons")
+	bool IsPushZ = false;
+};
+
+USTRUCT(BlueprintType)
+struct FWiiRemoteClassicControllerButtons
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteClassicControllerButtons")
+	bool IsPushA = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteClassicControllerButtons")
+	bool IsPushB = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteClassicControllerButtons")
+	bool IsPushX = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteClassicControllerButtons")
+	bool IsPushY = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteClassicControllerButtons")
+	bool IsPushPlus = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteClassicControllerButtons")
+	bool IsPushMinus = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteClassicControllerButtons")
+	bool IsPushHome = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteClassicControllerButtons")
+	bool IsPushUp = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteClassicControllerButtons")
+	bool IsPushDown = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteClassicControllerButtons")
+	bool IsPushRight = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteClassicControllerButtons")
+	bool IsPushLeft = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteClassicControllerButtons")
+	bool IsPushZL = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteClassicControllerButtons")
+	bool IsPushZR = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteClassicControllerButtons")
+	bool IsPushTriggerL = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteClassicControllerButtons")
+	bool IsPushTriggerR = false;
+};
+
+USTRUCT(BlueprintType)
+struct FWiiRemoteBalanceBoardSensor
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteBalanceSensor")
+	float TopL = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteBalanceSensor")
+	float TopR = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteBalanceSensor")
+	float BottomL = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteBalanceSensor")
+	float BottomR = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteBalanceSensor")
+	float Total = 0.0f;
+};
+
+USTRUCT(BlueprintType)
+struct FWiiRemoteBalanceBoard
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteBalanceBoard")
+	FWiiRemoteBalanceBoardSensor AtRestKilograms;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteBalanceBoard")
+	FWiiRemoteBalanceBoardSensor Kilograms;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteBalanceBoard")
+	FWiiRemoteBalanceBoardSensor Pounds;
+};
+
+USTRUCT(BlueprintType)
 struct FWiiRemoteDeviceData
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="WiiRemoteInput")
-	bool IsPushA = false;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="WiiRemoteInput")
-	bool IsPushB = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
-	bool IsPushPlus = false;
+	int32 BatteryPercent = 0;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
-	bool IsPushHome = false;
+	FWiiRemoteButtons Buttons;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
-	bool IsPushMinus = false;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
-	bool IsPushOne = false;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
-	bool IsPushTwo = false;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
-	bool IsPushUp = false;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
-	bool IsPushDown = false;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
-	bool IsPushLeft = false;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
-	bool IsPushRight = false;
+	TArray<FWiiRemoteDot> Dots;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
 	FVector Acceleration = FVector::ZeroVector;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
@@ -82,7 +157,47 @@ struct FWiiRemoteDeviceData
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
 	float OrientationRoll = 0.0f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
-	FVector Gyro = FVector::ZeroVector;
+	FWiiRemoteNunchukButtons NunchukButtons;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	FVector NunchukAcceleration = FVector::ZeroVector;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	float NunchukOrientationPitch = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	float NunchukOrientationRoll = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	float NunchukJoystickX = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	float NunchukJoystickY = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	FWiiRemoteClassicControllerButtons ClassicControllerButtons;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	float ClassicControllerLeftJoystickX = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	float ClassicControllerLeftJoystickY = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	float ClassicControllerRightJoystickX = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	float ClassicControllerRightJoystickY = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	float ClassicControllerRightTrigger = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	float ClassicControllerLeftTrigger = 0.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	FWiiRemoteBalanceBoard BalanceBoard;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	FRotator PlusSpeed = FRotator::ZeroRotator;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	int32 LED;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	bool IsRumble = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	bool IsConnectNunchuk = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	bool IsConnectClassicController = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	bool IsConnectBalanceBoard = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	bool IsConnectMotionPlus = false;
 };
 
 UINTERFACE(MinimalAPI)
@@ -104,33 +219,24 @@ class IWiiRemoteDelegate
 	virtual void OnAccelChanged();
 	virtual void OnOrientationChanged();
 	virtual void OnIRChanged();
-	virtual void OnWiiRemoteChanged();
 	virtual void OnNunchukConnected();
 	virtual void OnNunchukButtonsChanged();
 	virtual void OnNunchukAccelChanged();
 	virtual void OnNunchukOrientationChanged();
 	virtual void OnNunchukJoystickChanged();
-	virtual void OnNunchukChanged();
 	virtual void OnClassicConnected();
 	virtual void OnClassicButtonsChanged();
 	virtual void OnClassicJoystickLChanged();
 	virtual void OnClassicJoystickRChanged();
 	virtual void OnClassicTriggersChanged();
-	virtual void OnClassicChanged();
 	virtual void OnBalanceConnected();
 	virtual void OnBalanceWeightChanged();
-	virtual void OnBalanceChanged();
 	virtual void OnMotionPlusDetected();
 	virtual void OnMotionPlusEnabled();
 	virtual void OnMotionPlusSpeedChanged();
 	virtual void OnMotionPlusExtensionConnected();
 	virtual void OnMotionPlusExtensionDisconnected();
-	virtual void OnMotionPlusChanged();
 	virtual void OnExtensionDisconnected();
-	virtual void OnExtensionPartiallyInserted();
-	virtual void OnExtensionConnected();
-	virtual void OnExtensionChanged();
-	virtual void ChangedAll();
 	virtual void SetLED(unsigned char ledBits);
 	virtual void SetRumble(bool on);
 	virtual void SetRumbleForAsync(unsigned int milliseconds);

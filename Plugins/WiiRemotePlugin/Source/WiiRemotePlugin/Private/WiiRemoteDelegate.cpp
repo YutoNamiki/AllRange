@@ -14,33 +14,24 @@ void IWiiRemoteDelegate::OnButtonsChanged() { }
 void IWiiRemoteDelegate::OnAccelChanged() { }
 void IWiiRemoteDelegate::OnOrientationChanged() { }
 void IWiiRemoteDelegate::OnIRChanged() { }
-void IWiiRemoteDelegate::OnWiiRemoteChanged() { }
 void IWiiRemoteDelegate::OnNunchukConnected() { }
 void IWiiRemoteDelegate::OnNunchukButtonsChanged() { }
 void IWiiRemoteDelegate::OnNunchukAccelChanged() { }
 void IWiiRemoteDelegate::OnNunchukOrientationChanged() { }
 void IWiiRemoteDelegate::OnNunchukJoystickChanged() { }
-void IWiiRemoteDelegate::OnNunchukChanged() { }
 void IWiiRemoteDelegate::OnClassicConnected() { }
 void IWiiRemoteDelegate::OnClassicButtonsChanged() { }
 void IWiiRemoteDelegate::OnClassicJoystickLChanged() { }
 void IWiiRemoteDelegate::OnClassicJoystickRChanged() { }
 void IWiiRemoteDelegate::OnClassicTriggersChanged() { }
-void IWiiRemoteDelegate::OnClassicChanged() { }
 void IWiiRemoteDelegate::OnBalanceConnected() { }
 void IWiiRemoteDelegate::OnBalanceWeightChanged() { }
-void IWiiRemoteDelegate::OnBalanceChanged() { }
 void IWiiRemoteDelegate::OnMotionPlusDetected() { }
 void IWiiRemoteDelegate::OnMotionPlusEnabled() { }
 void IWiiRemoteDelegate::OnMotionPlusSpeedChanged() { }
 void IWiiRemoteDelegate::OnMotionPlusExtensionConnected() { }
 void IWiiRemoteDelegate::OnMotionPlusExtensionDisconnected() { }
-void IWiiRemoteDelegate::OnMotionPlusChanged() { }
 void IWiiRemoteDelegate::OnExtensionDisconnected() { }
-void IWiiRemoteDelegate::OnExtensionPartiallyInserted() { }
-void IWiiRemoteDelegate::OnExtensionConnected() { }
-void IWiiRemoteDelegate::OnExtensionChanged() { }
-void IWiiRemoteDelegate::ChangedAll() { }
 
 void IWiiRemoteDelegate::SetLED(unsigned char ledBits)
 {

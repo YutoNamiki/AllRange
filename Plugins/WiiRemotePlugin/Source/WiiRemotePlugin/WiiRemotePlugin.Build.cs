@@ -27,7 +27,7 @@ namespace UnrealBuildTool.Rules
             PrivateIncludePaths.AddRange(
                 new string[] {
                     "WiiRemotePlugin/Private",
-                    Path.Combine(ThirdPartyPath, "Include"),
+
 				}
 				);
 
@@ -56,6 +56,8 @@ namespace UnrealBuildTool.Rules
 					
 				}
 				);
+
+            LoadWiiRemoteLib(Target);
 		}
 
         public bool LoadWiiRemoteLib(TargetInfo Target)
