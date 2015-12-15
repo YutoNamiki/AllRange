@@ -20,6 +20,35 @@ enum class SpeakerFrequency : uint8
 };
 
 USTRUCT(BlueprintType)
+struct FWiiRemoteButtons
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteButtons")
+	bool IsPushA = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteButtons")
+	bool IsPushB = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteButtons")
+	bool IsPushPlus = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteButtons")
+	bool IsPushHome = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteButtons")
+	bool IsPushMinus = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteButtons")
+	bool IsPushOne = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteButtons")
+	bool IsPushTwo = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteButtons")
+	bool IsPushUp = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteButtons")
+	bool IsPushDown = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteButtons")
+	bool IsPushLeft = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteButtons")
+	bool IsPushRight = false;
+};
+
+USTRUCT(BlueprintType)
 struct FWiiRemoteDeviceData
 {
 	GENERATED_USTRUCT_BODY()
