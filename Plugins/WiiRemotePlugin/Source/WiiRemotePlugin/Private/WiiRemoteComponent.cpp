@@ -6,5 +6,27 @@
 UWiiRemoteComponent::UWiiRemoteComponent( const FObjectInitializer& ObjectInitializer )
 	: Super( ObjectInitializer )
 {
+	bWantsInitializeComponent = true;
+	bAutoActivate = true;
+	PrimaryComponentTick.bCanEverTick = true;
+}
 
+void UWiiRemoteComponent::OnRegister()
+{
+	Super::OnRegister();
+	ValidSelfPointer = this;
+	SetInterfaceDelegate(GetOwner());
+	Startup();
+}
+
+void UWiiRemoteComponent::OnUnregister()
+{
+	Super::OnUnregister();
+	Shutdown();
+}
+
+void UWiiRemoteComponent::TickComponent(float deltaTime, ELevelTick tickType, FActorComponentTickFunction* thisTickFunction)
+{
+	Super::TickComponent(deltaTime, tickType, thisTickFunction);
+	IWiiRemoteDelegateBlueprint::Tick(deltaTime);
 }

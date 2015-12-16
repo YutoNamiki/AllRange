@@ -3,23 +3,18 @@
 #pragma once
 
 #include "Components/ActorComponent.h"
+#include "WiiRemoteDelegateBlueprint.h"
 #include "WiiRemoteComponent.generated.h"
-
-USTRUCT()
-struct FWiiRemotePluginStruct
-{
-	GENERATED_USTRUCT_BODY()
  
-};
- 
-UCLASS()
-class WIIREMOTEPLUGIN_API UWiiRemoteComponent : public UActorComponent
+UCLASS(Blueprintable, ClassGroup = "Input Controller", meta = (BlueprintSpawnableComponent))
+class WIIREMOTEPLUGIN_API UWiiRemoteComponent : public UActorComponent, public IWiiRemoteDelegateBlueprint
 {
-	GENERATED_UCLASS_BODY()
+	GENERATED_BODY()
 
 public:
-
-private:
-
-
+	UWiiRemoteComponent(const FObjectInitializer& init);
+	virtual void OnRegister() override;
+	virtual void OnUnregister() override;
+	virtual void TickComponent(float deltaTime, ELevelTick tickType, FActorComponentTickFunction* thisTickFunction) override;
+	
 };

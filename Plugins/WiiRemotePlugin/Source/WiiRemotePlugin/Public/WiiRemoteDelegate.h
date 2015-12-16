@@ -257,11 +257,16 @@ class IWiiRemoteDelegate
 	virtual void OnMotionPlusExtensionConnected(int32 wiiRemoteId);
 	virtual void OnMotionPlusExtensionDisconnected(int32 wiiRemoteId);
 	virtual void OnExtensionDisconnected(int32 wiiRemoteId);
-	virtual void SetLED(unsigned char ledBits);
+	virtual void SetLED(WiiRemoteLED ledBits);
 	virtual void SetRumble(bool on);
 	virtual void SetRumbleForAsync(int32 milliseconds);
 	virtual void MuteSpeaker(bool on);
 	virtual void PlaySquareWave(WiiRemoteSpeakerFrequency frequency, int32 volume);
 	virtual void PlaySample(WiiRemoteSpeakerFrequency frequency, int32 volume);
+	virtual FWiiRemoteDeviceData* WiiRemoteLatestData(int32 wiiRemoteId);
+	virtual int32 WiiRemoteMaxId();
+	virtual bool IsWiiRemoteValidId(int32 wiiRemoteId);
+	virtual void Startup();
+	virtual void Shutdown();
 	virtual void Tick(float deltaTime);
 };

@@ -79,23 +79,6 @@ FMyoDeviceData* IMyoDelegate::MyoLatestData(int32 myoId)
 	return nullptr;
 }
 
-void IMyoDelegate::MyoLatestData(int32 myoId, MyoPose& Pose, FVector& Acceleration, FRotator& Orientation, FVector& Gyro, MyoArm& Arm, MyoArmDirection& xDirection, FVector& ArmAcceleration,
-	FRotator& ArmOrientation, FVector& ArmGyro, FRotator& ArmCorrection, FVector& BodySpaceAcceleration)
-{
-	auto data = *MyoLatestData(myoId);
-	Pose = data.Pose;
-	Acceleration = data.Acceleration;
-	Orientation = data.Orientation;
-	Gyro = data.Gyro;
-	Arm = data.Arm;
-	xDirection = data.XDirection;
-	ArmAcceleration = data.ArmAcceleration;
-	ArmOrientation = data.ArmOrientation;
-	ArmGyro = data.ArmGyro;
-	ArmCorrection = data.ArmSpaceCorrection;
-	BodySpaceAcceleration = data.BodySpaceNullAcceleration;
-}
-
 void IMyoDelegate::MyoWhichArm(int32 myoId, MyoArm& Arm)
 {
 	if (IMyoPlugin::IsAvailable())

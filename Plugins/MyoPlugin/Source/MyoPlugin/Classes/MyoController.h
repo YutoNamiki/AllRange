@@ -15,44 +15,44 @@ public:
 	UMyoController(const FObjectInitializer &init);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Myo Frame")
-		TEnumAsByte<MyoPose> Pose;
+	TEnumAsByte<MyoPose> Pose;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Myo Frame")
-		FVector Acceleration;
+	FVector Acceleration;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Myo Frame")
-		FRotator Orientation;
+	FRotator Orientation;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Myo Frame")
-		FVector Gyro;
+	FVector Gyro;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Myo Frame")
-		TEnumAsByte<MyoArm> Arm;
+	TEnumAsByte<MyoArm> Arm;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Myo Frame")
-		TEnumAsByte<MyoArmDirection> XDirection;
+	TEnumAsByte<MyoArmDirection> XDirection;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Myo Frame")
-		FVector ArmAcceleration;
+	FVector ArmAcceleration;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Myo Frame")
-		FRotator ArmOrientation;
+	FRotator ArmOrientation;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Myo Frame")
-		FVector ArmGyro;
+	FVector ArmGyro;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Myo Frame")
-		FRotator ArmSpaceCorrection;
+	FRotator ArmSpaceCorrection;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Myo Frame")
-		FVector BodySpaceNullAcceleration;
+	FVector BodySpaceNullAcceleration;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Myo Frame")
-		int32 MyoId;
+	int32 MyoId;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myo Frame")
-		bool isOnLeftArm();
+	bool isOnLeftArm();
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myo Frame")
-		bool isOnRightArm();
+	bool isOnRightArm();
 	UFUNCTION(BlueprintCallable, Category = MyoFunctions)
-		void VibrateDevice(MyoVibrationType type);
+	void VibrateDevice(MyoVibrationType type);
 	UFUNCTION(BlueprintCallable, Category = MyoFunctions)
-		void CalibrateArmOrientation(FRotator direction);
+	void CalibrateArmOrientation(FRotator direction);
 	UFUNCTION(BlueprintCallable, Category = MyoFunctions)
-		void Unlock(MyoUnlockType type);
+	void Unlock(MyoUnlockType type);
 	UFUNCTION(BlueprintCallable, Category = MyoFunctions)
-		void Lock();
+	void Lock();
 	UFUNCTION(BlueprintCallable, Category = MyoFunctions)
-		void SetStreamEmg(MyoStreamEmgType streamType);
+	void SetStreamEmg(MyoStreamEmgType streamType);
 
 	void SetFromMyoDeviceData(FMyoDeviceData* data);
 

@@ -136,8 +136,6 @@ class IMyoDelegate
 	virtual void MyoLockMyo(int deviceId);
 	virtual bool MyoIsHubEnabled();
 	virtual FMyoDeviceData* MyoLatestData(int32 myoId);
-	virtual void MyoLatestData(int32 myoId, MyoPose& Pose, FVector& Acceleration, FRotator& Orientation, FVector& Gyro, MyoArm& Arm, MyoArmDirection& xDirection,
-		FVector& ArmAcceleration, FRotator& ArmOrientation, FVector& ArmGyro, FRotator& ArmCorrection, FVector& BodySpaceAcceleration);
 	virtual void MyoWhichArm(int32 myoId, MyoArm& Arm);
 	virtual void MyoLeftMyoId(bool& available, int32& myoId);
 	virtual void MyoRightMyoId(bool& available, int32& myoId);

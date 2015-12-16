@@ -33,7 +33,7 @@ void IWiiRemoteDelegate::OnMotionPlusExtensionConnected(int32 wiiRemoteId) { }
 void IWiiRemoteDelegate::OnMotionPlusExtensionDisconnected(int32 wiiRemoteId) { }
 void IWiiRemoteDelegate::OnExtensionDisconnected(int32 wiiRemoteId) { }
 
-void IWiiRemoteDelegate::SetLED(unsigned char ledBits)
+void IWiiRemoteDelegate::SetLED(WiiRemoteLED ledBits)
 {
 
 }
@@ -63,7 +63,42 @@ void IWiiRemoteDelegate::PlaySample(WiiRemoteSpeakerFrequency frequency, int32 v
 
 }
 
+FWiiRemoteDeviceData* IWiiRemoteDelegate::WiiRemoteLatestData(int32 wiiRemoteId)
+{
+	if (IWiiRemotePlugin::IsAvailable())
+		return IWiiRemotePlugin::Get().LatestData(wiiRemoteId);
+	return nullptr;
+}
+
+bool IWiiRemoteDelegate::IsWiiRemoteValidId(int32 wiiRemoteId)
+{
+	if (IWiiRemotePlugin::IsAvailable())
+		return IWiiRemotePlugin::Get().IsValidDeviceId(wiiRemoteId);
+	return false;
+}
+
+int32 IWiiRemoteDelegate::WiiRemoteMaxId()
+{
+	auto size = 0;
+	if (IWiiRemotePlugin::IsAvailable())
+		IWiiRemotePlugin::Get().MaxWiiRemoteId(size);
+	return size;
+}
+
+void IWiiRemoteDelegate::Startup()
+{
+	if (IWiiRemotePlugin::IsAvailable())
+		IWiiRemotePlugin::Get().SetDelegate(this);
+}
+
+void IWiiRemoteDelegate::Shutdown()
+{
+	if (IWiiRemotePlugin::IsAvailable())
+		IWiiRemotePlugin::Get().RemoveDelgate();
+}
+
 void IWiiRemoteDelegate::Tick(float deltaTime)
 {
-
+	if (IWiiRemotePlugin::IsAvailable())
+		IWiiRemotePlugin::Get().Tick(deltaTime);
 }

@@ -17,29 +17,29 @@ class IMyoInterface
 
 public:
 	UFUNCTION(BlueprintImplementableEvent, Category = MyoEvents)
-		void OnConnect(UMyoController* myo);
+	void OnConnect(UMyoController* myo);
 	UFUNCTION(BlueprintImplementableEvent, Category = MyoEvents)
-		void OnDisconnect(UMyoController* myo);
+	void OnDisconnect(UMyoController* myo);
 	UFUNCTION(BlueprintImplementableEvent, Category = MyoEvents)
-		void OnPair(UMyoController* myo);
+	void OnPair(UMyoController* myo);
 	UFUNCTION(BlueprintImplementableEvent, Category = MyoEvents)
-		void OnUnpair(UMyoController* myo);
+	void OnUnpair(UMyoController* myo);
 	UFUNCTION(BlueprintImplementableEvent, Category = MyoEvents)
-		void OnArmMoved(UMyoController* myo, FVector armAcceleration, FRotator armOrientation, FVector armGyro, MyoPose pose);
+	void OnArmMoved(UMyoController* myo, FVector armAcceleration, FRotator armOrientation, FVector armGyro, MyoPose pose);
 	UFUNCTION(BlueprintImplementableEvent, Category = MyoEvents)
-		void OnOrientationData(UMyoController* myo, FRotator orientation);
+	void OnOrientationData(UMyoController* myo, FRotator orientation);
 	UFUNCTION(BlueprintImplementableEvent, Category = MyoEvents)
-		void OnAccelerometerData(UMyoController* myo, FVector acceleration);
+	void OnAccelerometerData(UMyoController* myo, FVector acceleration);
 	UFUNCTION(BlueprintImplementableEvent, Category = MyoEvents)
-		void OnGyroscopeData(UMyoController* myo, FVector gyro);
+	void OnGyroscopeData(UMyoController* myo, FVector gyro);
 	UFUNCTION(BlueprintImplementableEvent, Category = MyoEvents)
-		void OnPose(UMyoController* myo, MyoPose pose);
+	void OnPose(UMyoController* myo, MyoPose pose);
 	UFUNCTION(BlueprintImplementableEvent, Category = MyoEvents)
-		void OnArmSync(UMyoController* myo, MyoArm arm, MyoArmDirection direction);
+	void OnArmSync(UMyoController* myo, MyoArm arm, MyoArmDirection direction);
 	UFUNCTION(BlueprintImplementableEvent, Category = MyoEvents)
-		void OnArmUnsync(UMyoController* myo);
+	void OnArmUnsync(UMyoController* myo);
 	UFUNCTION(BlueprintImplementableEvent, Category = MyoEvents)
-		void OnEmgData(UMyoController* myo, FMyoEmgData data);
+	void OnEmgData(UMyoController* myo, FMyoEmgData data);
 	UFUNCTION(BlueprintImplementableEvent, Category = MyoEvents)
-		void DeviceDisabled();
+	void DeviceDisabled();
 };
