@@ -241,7 +241,7 @@ void IWiiRemoteDelegateBlueprint::PlaySample(WiiRemoteSpeakerFrequency frequency
 
 bool IWiiRemoteDelegateBlueprint::IsWiiRemoteValidId(int32 wiiRemoteId)
 {
-	return (IsValidDelegate() && IWiiRemoteDelegateBlueprint::IsWiiRemoteValidId(wiiRemoteId));
+	return (IsValidDelegate() && IWiiRemoteDelegate::IsWiiRemoteValidId(wiiRemoteId));
 }
 
 void IWiiRemoteDelegateBlueprint::Startup()

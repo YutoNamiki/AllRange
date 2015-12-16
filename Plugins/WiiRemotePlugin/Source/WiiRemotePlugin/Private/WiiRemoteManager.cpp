@@ -84,13 +84,15 @@ void UWiiRemoteManager::ShutDown()
 	}
 	for (auto wiiRemote : WiiRemotes)
 	{
-		if (wiiRemote->IsConnected())
-		{
-			wiiRemote->SetLEDs(0x00);
-			wiiRemote->Disconnect();
-		}
 		if (wiiRemote != nullptr)
+		{
+			if (wiiRemote->IsConnected())
+			{
+				wiiRemote->SetLEDs(0x00);
+				wiiRemote->Disconnect();
+			}
 			delete wiiRemote;
+		}
 	}
 	WiiRemotes.Empty();
 	Data.Empty();
