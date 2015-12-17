@@ -15,10 +15,36 @@ struct FWiiRemoteDeviceData;
 class IWiiRemoteDelegate;
 
 USTRUCT(BlueprintType)
-struct FWiiRemoteInputChangeFlags
+struct FWiiRemoteChangeFlags
 {
 	GENERATED_USTRUCT_BODY()
-		
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsConnected = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsConnectionLost = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsBatteryChanged = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsBatteryDrained = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsLEDChanged = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsNunchukConnected = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsClassicConnected = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsBalanceConnected = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsMotionPlusDetected = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsMotionPlusEnabled = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsMotionPlusExtensionConnected = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsMotionPlusExtensionDisconnected = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsExtensionDisconnected = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool IsButtonsChanged = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -58,7 +84,7 @@ public:
 	//TArray<wiimote> WiiRemotes;
 	wiimote WiiRemotes[4];
 	TArray<FWiiRemoteDeviceData> Data;
-	TArray<FWiiRemoteInputChangeFlags> ChangeFlags;
+	TArray<FWiiRemoteChangeFlags> ChangeFlags;
 	TArray<uint64> LastPairedWiiRemoteID;
 	IWiiRemoteDelegate* WiiRemoteDelegate;
 	

@@ -13,7 +13,7 @@ UWiiRemoteManager::UWiiRemoteManager(class FObjectInitializer const& objectIniti
 {
 	manager = this;
 	Data.Init(FWiiRemoteDeviceData(), 4);
-	ChangeFlags.Init(FWiiRemoteInputChangeFlags(), 4);
+	ChangeFlags.Init(FWiiRemoteChangeFlags(), 4);
 	LastPairedWiiRemoteID.Init(-1, 4);
 }
 
@@ -34,6 +34,11 @@ bool UWiiRemoteManager::Startup()
 {
 	for (auto index = 0; index < Data.Num(); index++)
 	{
+		WiiRemotes[index].CallbackTriggerFlags = static_cast<state_change_flags>((state_change_flags::CHANGED_ALL | state_change_flags::CONNECTED));
+		WiiRemotes[index].ChangedCallback = OnStateChanged;
+	}
+	for (auto index = 0; index < Data.Num(); index++)
+	{
 		if (!WiiRemotes[index].IsConnected())
 		{
 			if (WiiRemotes[index].Connect())
@@ -47,11 +52,6 @@ bool UWiiRemoteManager::Startup()
 				LastPairedWiiRemoteID[index] = WiiRemotes[index].UniqueID;
 			}
 		}
-	}
-	for (auto index = 0; index < Data.Num(); index++)
-	{
-		WiiRemotes[index].ChangedCallback = OnStateChanged;
-		WiiRemotes[index].CallbackTriggerFlags = static_cast<state_change_flags>((state_change_flags::CHANGED_ALL | state_change_flags::CONNECTED));
 	}
 	return true;
 }
@@ -71,15 +71,79 @@ void UWiiRemoteManager::Tick(float deltaTime)
 {
 	for (auto index = 0; index < ChangeFlags.Num(); index++)
 	{
+		auto wiiRemote = &WiiRemotes[index];
+		if (ChangeFlags[index].IsConnected)
+		{
+			OnConnected(wiiRemote);
+			ChangeFlags[index].IsConnected = false;
+		}
+		if (ChangeFlags[index].IsConnectionLost)
+		{
+			OnConnectionLost(wiiRemote);
+			ChangeFlags[index].IsConnectionLost = false;
+		}
+		if (ChangeFlags[index].IsBatteryChanged)
+		{
+			OnBatteryChanged(wiiRemote, wiiRemote->BatteryPercent);
+			ChangeFlags[index].IsBatteryChanged = false;
+		}
+		if (ChangeFlags[index].IsBatteryDrained)
+		{
+			OnBatteryDrained(wiiRemote);
+			ChangeFlags[index].IsBatteryDrained = false;
+		}
+		if (ChangeFlags[index].IsLEDChanged)
+		{
+			OnLEDsChanged(wiiRemote, wiiRemote->LED.Bits);
+			ChangeFlags[index].IsLEDChanged = false;
+		}
+		if (ChangeFlags[index].IsNunchukConnected)
+		{
+			OnNunchukConnected(wiiRemote);
+			ChangeFlags[index].IsNunchukConnected = false;
+		}
+		if (ChangeFlags[index].IsClassicConnected)
+		{
+			OnClassicConnected(wiiRemote);
+			ChangeFlags[index].IsClassicConnected = false;
+		}
+		if (ChangeFlags[index].IsBalanceConnected)
+		{
+			OnBalanceConnected(wiiRemote);
+			ChangeFlags[index].IsBalanceConnected = false;
+		}
+		if (ChangeFlags[index].IsMotionPlusDetected)
+		{
+			OnMotionPlusDetected(wiiRemote);
+			ChangeFlags[index].IsMotionPlusDetected = false;
+		}
+		if (ChangeFlags[index].IsMotionPlusEnabled)
+		{
+			OnMotionPlusEnabled(wiiRemote);
+			ChangeFlags[index].IsMotionPlusEnabled = false;
+		}
+		if (ChangeFlags[index].IsMotionPlusExtensionConnected)
+		{
+			OnMotionPlusExtensionConnected(wiiRemote);
+			ChangeFlags[index].IsMotionPlusExtensionConnected = false;
+		}
+		if (ChangeFlags[index].IsMotionPlusExtensionDisconnected)
+		{
+			OnMotionPlusExtensionDisconnected(wiiRemote);
+			ChangeFlags[index].IsMotionPlusExtensionDisconnected = false;
+		}
+		if (ChangeFlags[index].IsExtensionDisconnected)
+		{
+			OnExtensionDisconnected(wiiRemote);
+			ChangeFlags[index].IsExtensionDisconnected = false;
+		}
 		if (ChangeFlags[index].IsAccelChanged)
 		{
-			auto wiiRemote = &WiiRemotes[index];
 			OnAccelChanged(wiiRemote, FVector(wiiRemote->Acceleration.X, wiiRemote->Acceleration.Y, wiiRemote->Acceleration.Z));
 			ChangeFlags[index].IsAccelChanged = false;
 		}
 		if (ChangeFlags[index].IsButtonsChanged)
 		{
-			auto wiiRemote = &WiiRemotes[index];
 			FWiiRemoteButtons buttons;
 			UWiiRemoteManager::SetWiiRemoteButtons(*wiiRemote, buttons);
 			OnButtonsChanged(wiiRemote, buttons);
@@ -87,13 +151,11 @@ void UWiiRemoteManager::Tick(float deltaTime)
 		}
 		if (ChangeFlags[index].IsOrientationChanged)
 		{
-			auto wiiRemote = &WiiRemotes[index];
 			OnOrientationChanged(wiiRemote, wiiRemote->Acceleration.Orientation.Pitch, wiiRemote->Acceleration.Orientation.Roll);
 			ChangeFlags[index].IsOrientationChanged = false;
 		}
 		if (ChangeFlags[index].IsIRChanged)
 		{
-			auto wiiRemote = &WiiRemotes[index];
 			TArray<FWiiRemoteDot> dots;
 			UWiiRemoteManager::SetWiiRemoteDots(*wiiRemote, dots);
 			OnIRChanged(wiiRemote, dots);
@@ -101,13 +163,11 @@ void UWiiRemoteManager::Tick(float deltaTime)
 		}
 		if (ChangeFlags[index].IsNunchukAccelChanged)
 		{
-			auto wiiRemote = &WiiRemotes[index];
 			OnNunchukAccelChanged(wiiRemote, FVector(wiiRemote->Nunchuk.Acceleration.X, wiiRemote->Nunchuk.Acceleration.Y, wiiRemote->Nunchuk.Acceleration.Z));
 			ChangeFlags[index].IsNunchukAccelChanged = false;
 		}
 		if (ChangeFlags[index].IsNunchukButtonsChanged)
 		{
-			auto wiiRemote = &WiiRemotes[index];
 			FWiiRemoteNunchukButtons buttons;
 			UWiiRemoteManager::SetWiiRemoteNunchukButtons(*wiiRemote, buttons);
 			OnNunchukButtonsChanged(wiiRemote, buttons);
@@ -115,19 +175,16 @@ void UWiiRemoteManager::Tick(float deltaTime)
 		}
 		if (ChangeFlags[index].IsNunchukJoystickChanged)
 		{
-			auto wiiRemote = &WiiRemotes[index];
 			OnNunchukJoystickChanged(wiiRemote, wiiRemote->Nunchuk.Joystick.X, wiiRemote->Nunchuk.Joystick.Y);
 			ChangeFlags[index].IsNunchukJoystickChanged = false;
 		}
 		if (ChangeFlags[index].IsNunchukOrientationChanged)
 		{
-			auto wiiRemote = &WiiRemotes[index];
 			OnNunchukOrientationChanged(wiiRemote, wiiRemote->Nunchuk.Acceleration.Orientation.Pitch, wiiRemote->Nunchuk.Acceleration.Orientation.Roll);
 			ChangeFlags[index].IsNunchukOrientationChanged = false;
 		}
 		if (ChangeFlags[index].IsClassicButtonsChanged)
 		{
-			auto wiiRemote = &WiiRemotes[index];
 			FWiiRemoteClassicControllerButtons buttons;
 			UWiiRemoteManager::SetWiiRemoteClassicControllerButtons(*wiiRemote, buttons);
 			OnClassicButtonsChanged(wiiRemote, buttons);
@@ -135,25 +192,21 @@ void UWiiRemoteManager::Tick(float deltaTime)
 		}
 		if (ChangeFlags[index].IsClassicJoystickLChanged)
 		{
-			auto wiiRemote = &WiiRemotes[index];
 			OnClassicJoystickLChanged(wiiRemote, wiiRemote->ClassicController.JoystickL.X, wiiRemote->ClassicController.JoystickL.Y);
 			ChangeFlags[index].IsClassicJoystickLChanged = false;
 		}
 		if (ChangeFlags[index].IsClassicJoystickRChanged)
 		{
-			auto wiiRemote = &WiiRemotes[index];
 			OnClassicJoystickRChanged(wiiRemote, wiiRemote->ClassicController.JoystickR.X, wiiRemote->ClassicController.JoystickR.Y);
 			ChangeFlags[index].IsClassicJoystickRChanged = false;
 		}
 		if (ChangeFlags[index].IsClassicTriggerChanged)
 		{
-			auto wiiRemote = &WiiRemotes[index];
 			OnClassicTriggersChanged(wiiRemote, wiiRemote->ClassicController.TriggerL, wiiRemote->ClassicController.TriggerR);
 			ChangeFlags[index].IsClassicTriggerChanged = false;
 		}
 		if (ChangeFlags[index].IsBalanceWeightChanged)
 		{
-			auto wiiRemote = &WiiRemotes[index];
 			FWiiRemoteBalanceBoard balanceBoard;
 			SetWiiRemoteBalanceBoard(*wiiRemote, balanceBoard);
 			OnBalanceWeightChanged(wiiRemote, balanceBoard);
@@ -161,7 +214,6 @@ void UWiiRemoteManager::Tick(float deltaTime)
 		}
 		if (ChangeFlags[index].IsMotionPlusSpeedChanged)
 		{
-			auto wiiRemote = &WiiRemotes[index];
 			OnMotionPlusSpeedChanged(wiiRemote, FRotator(wiiRemote->MotionPlus.Speed.Pitch, wiiRemote->MotionPlus.Speed.Yaw, wiiRemote->MotionPlus.Speed.Roll));
 			ChangeFlags[index].IsMotionPlusSpeedChanged = false;
 		}
@@ -325,6 +377,7 @@ void UWiiRemoteManager::OnOrientationChanged(wiimote* wiiRemote, float pitch, fl
 		return;
 	if (WiiRemoteDelegate)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("WiiRemote Orientation Pitch:%f, Roll:%f"), pitch, roll);
 		Data[index].OrientationPitch = pitch;
 		Data[index].OrientationRoll = roll;
 		if (IsWiiRemoteValidForInputMapping(wiiRemote->UniqueID))
@@ -717,51 +770,56 @@ void OnStateChanged(wiimote& wiiRemote, state_change_flags changed, const wiimot
 {
 	if (changed & state_change_flags::CONNECTED)
 	{
-		new_state.ExtensionType != wiimote::BALANCE_BOARD ? wiiRemote.SetReportType(wiimote::IN_BUTTONS_ACCEL_IR_EXT) : wiiRemote.SetReportType(wiimote::IN_BUTTONS_BALANCE_BOARD);
-		manager->OnConnected(&wiiRemote);
+		if (new_state.ExtensionType != wiimote::BALANCE_BOARD)
+			wiiRemote.SetReportType(wiimote::IN_BUTTONS_ACCEL_IR_EXT);
+		else
+			wiiRemote.SetReportType(wiimote::IN_BUTTONS_BALANCE_BOARD);
 	}
-	if (changed & state_change_flags::CONNECTION_LOST)
-		manager->OnConnectionLost(&wiiRemote);
 	if (changed & state_change_flags::CHANGED_ALL)
 		wiiRemote.RefreshState();
-	if (changed & state_change_flags::BATTERY_CHANGED)
-		manager->OnBatteryChanged(&wiiRemote, wiiRemote.BatteryPercent);
-	if (changed & state_change_flags::BATTERY_DRAINED)
-		manager->OnBatteryDrained(&wiiRemote);
-	if (changed & state_change_flags::LEDS_CHANGED)
-		manager->OnLEDsChanged(&wiiRemote, wiiRemote.LED.Bits);
-	if (changed & state_change_flags::NUNCHUK_CONNECTED)
-		manager->OnNunchukConnected(&wiiRemote);
-	if (changed & state_change_flags::CLASSIC_CONNECTED)
-		manager->OnClassicConnected(&wiiRemote);
-	if (changed & state_change_flags::BALANCE_CONNECTED)
-		manager->OnBalanceConnected(&wiiRemote);
 	if (changed & state_change_flags::MOTIONPLUS_DETECTED)
-	{
 		wiiRemote.EnableMotionPlus();
-		manager->OnMotionPlusDetected(&wiiRemote);
-	}
-	if (changed & state_change_flags::MOTIONPLUS_ENABLED)
-		manager->OnMotionPlusEnabled(&wiiRemote);
 	if (changed & state_change_flags::MOTIONPLUS_EXTENSION_CONNECTED)
 	{
 		if (wiiRemote.MotionPlusEnabled())
 			wiiRemote.EnableMotionPlus();
-		manager->OnMotionPlusExtensionConnected(&wiiRemote);
 	}
 	if (changed & state_change_flags::MOTIONPLUS_EXTENSION_DISCONNECTED)
 	{
 		if (wiiRemote.MotionPlusConnected())
 			wiiRemote.EnableMotionPlus();
-		manager->OnMotionPlusExtensionDisconnected(&wiiRemote);
 	}
-	if (changed & state_change_flags::EXTENSION_DISCONNECTED)
-		manager->OnExtensionDisconnected(&wiiRemote);
 
 	auto index = manager->WiiRemoteIndexForWiiRemote(wiiRemote.UniqueID);
 	if (index == -1)
 		return;
-
+	
+	if (changed & state_change_flags::CONNECTED)
+		manager->ChangeFlags[index].IsConnected = true;
+	if (changed & state_change_flags::CONNECTION_LOST)
+		manager->ChangeFlags[index].IsConnectionLost = true;
+	if (changed & state_change_flags::BATTERY_CHANGED)
+		manager->ChangeFlags[index].IsBatteryChanged = true;
+	if (changed & state_change_flags::BATTERY_DRAINED)
+		manager->ChangeFlags[index].IsBatteryDrained = true;
+	if (changed & state_change_flags::LEDS_CHANGED)
+		manager->ChangeFlags[index].IsLEDChanged = true;
+	if (changed & state_change_flags::NUNCHUK_CONNECTED)
+		manager->ChangeFlags[index].IsNunchukConnected = true;
+	if (changed & state_change_flags::CLASSIC_CONNECTED)
+		manager->ChangeFlags[index].IsClassicConnected = true;
+	if (changed & state_change_flags::BALANCE_CONNECTED)
+		manager->ChangeFlags[index].IsBalanceConnected = true;
+	if (changed & state_change_flags::MOTIONPLUS_DETECTED)
+		manager->ChangeFlags[index].IsMotionPlusDetected = true;
+	if (changed & state_change_flags::MOTIONPLUS_ENABLED)
+		manager->ChangeFlags[index].IsMotionPlusEnabled = true;
+	if (changed & state_change_flags::MOTIONPLUS_EXTENSION_CONNECTED)
+		manager->ChangeFlags[index].IsMotionPlusExtensionConnected = true;
+	if (changed & state_change_flags::MOTIONPLUS_EXTENSION_DISCONNECTED)
+		manager->ChangeFlags[index].IsMotionPlusExtensionDisconnected = true;
+	if (changed & state_change_flags::EXTENSION_DISCONNECTED)
+		manager->ChangeFlags[index].IsExtensionDisconnected = true;
 	if (changed & state_change_flags::BUTTONS_CHANGED)
 		manager->ChangeFlags[index].IsButtonsChanged = true;
 	if (changed & state_change_flags::ACCEL_CHANGED)
