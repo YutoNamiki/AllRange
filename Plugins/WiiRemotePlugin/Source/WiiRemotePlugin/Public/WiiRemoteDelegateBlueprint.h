@@ -51,12 +51,6 @@ public:
 	virtual void OnMotionPlusExtensionConnected(int32 wiiRemoteId) override;
 	virtual void OnMotionPlusExtensionDisconnected(int32 wiiRemoteId) override;
 	virtual void OnExtensionDisconnected(int32 wiiRemoteId) override;
-	virtual void SetLED(WiiRemoteLED ledBits) override;
-	virtual void SetRumble(bool on) override;
-	virtual void SetRumbleForAsync(int32 milliseconds) override;
-	virtual void MuteSpeaker(bool on) override;
-	virtual void PlaySquareWave(WiiRemoteSpeakerFrequency frequency, int32 volume) override;
-	virtual void PlaySample(WiiRemoteSpeakerFrequency frequency, int32 volume) override;
 	virtual bool IsWiiRemoteValidId(int32 wiiRemoteId) override;
 	virtual void Startup() override;
 	virtual void Shutdown() override;

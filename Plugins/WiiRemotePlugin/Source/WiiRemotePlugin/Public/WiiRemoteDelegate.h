@@ -222,6 +222,19 @@ struct FWiiRemoteDeviceData
 	bool IsInitialized = false;
 };
 
+USTRUCT()
+struct FWiiRemoteSample
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY()
+	TArray<uint8> Samples;
+	UPROPERTY()
+	int32 Length = 0;
+	UPROPERTY()
+	WiiRemoteSpeakerFrequency Frequency = WiiRemoteSpeakerFrequency::FreqNone;
+};
+
 UINTERFACE(MinimalAPI)
 class UWiiRemoteDelegate : public UInterface
 {
@@ -259,12 +272,12 @@ class IWiiRemoteDelegate
 	virtual void OnMotionPlusExtensionConnected(int32 wiiRemoteId);
 	virtual void OnMotionPlusExtensionDisconnected(int32 wiiRemoteId);
 	virtual void OnExtensionDisconnected(int32 wiiRemoteId);
-	virtual void SetLED(WiiRemoteLED ledBits);
-	virtual void SetRumble(bool on);
-	virtual void SetRumbleForAsync(int32 milliseconds);
-	virtual void MuteSpeaker(bool on);
-	virtual void PlaySquareWave(WiiRemoteSpeakerFrequency frequency, int32 volume);
-	virtual void PlaySample(WiiRemoteSpeakerFrequency frequency, int32 volume);
+	virtual void SetLED(int32 playerIndex, WiiRemoteLED ledBits);
+	virtual void SetRumble(int32 playerIndex, bool on);
+	virtual void SetRumbleForAsync(int32 playerIndex, int32 milliseconds);
+	virtual void EnableSpeaker(int32 playerIndex, bool on);
+	virtual void PlaySquareWave(int32 playerIndex, WiiRemoteSpeakerFrequency frequency, int32 volume);
+	virtual void PlaySample(int32 playerIndex, FWiiRemoteSample sample, WiiRemoteSpeakerFrequency frequency, int32 volume);
 	virtual FWiiRemoteDeviceData* WiiRemoteLatestData(int32 wiiRemoteId);
 	virtual int32 WiiRemoteMaxId();
 	virtual bool IsWiiRemoteValidId(int32 wiiRemoteId);

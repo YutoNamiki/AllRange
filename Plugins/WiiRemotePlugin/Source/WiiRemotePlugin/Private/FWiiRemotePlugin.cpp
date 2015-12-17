@@ -183,29 +183,70 @@ void FWiiRemotePlugin::Tick(float deltaTime)
 	wiiRemoteManager->Tick(deltaTime);
 }
 
-void FWiiRemotePlugin::SetRumble(bool on)
+void FWiiRemotePlugin::SetLED(int32 playerIndex, WiiRemoteLED ledBits)
 {
-
+	if (playerIndex < 0 || playerIndex > 4)
+		return;
+	auto wiiRemote = &wiiRemoteManager->WiiRemotes[playerIndex];
+	if (wiiRemote->IsConnected())
+		wiiRemote->SetLEDs(static_cast<BYTE>(ledBits));
 }
 
-void FWiiRemotePlugin::SetRumbleForAsync(int32 milliseconds)
+void FWiiRemotePlugin::SetRumble(int32 playerIndex, bool on)
 {
-
+	if (playerIndex < 0 || playerIndex > 4)
+		return;
+	auto wiiRemote = &wiiRemoteManager->WiiRemotes[playerIndex];
+	if (wiiRemote->IsConnected())
+		wiiRemote->SetRumble(on);
 }
 
-void FWiiRemotePlugin::MuteSpeaker(bool on)
+void FWiiRemotePlugin::SetRumbleForAsync(int32 playerIndex, int32 milliseconds)
 {
-
+	if (playerIndex < 0 || playerIndex > 4)
+		return;
+	auto wiiRemote = &wiiRemoteManager->WiiRemotes[playerIndex];
+	if (wiiRemote->IsConnected())
+		wiiRemote->RumbleForAsync(static_cast<unsigned int>(milliseconds));
 }
 
-void FWiiRemotePlugin::PlaySquareWave(WiiRemoteSpeakerFrequency frequency, int32 volume)
+void FWiiRemotePlugin::EnableSpeaker(int32 playerIndex, bool on)
 {
-
+	if (playerIndex < 0 || playerIndex > 4)
+		return;
+	auto wiiRemote = &wiiRemoteManager->WiiRemotes[playerIndex];
+	if (wiiRemote->IsConnected())
+		wiiRemote->EnableSpeaker(on);
 }
 
-void FWiiRemotePlugin::PlaySample(WiiRemoteSpeakerFrequency frequency, int32 volume)
+void FWiiRemotePlugin::PlaySquareWave(int32 playerIndex, WiiRemoteSpeakerFrequency frequency, int32 volume)
 {
+	if (playerIndex < 0 || playerIndex > 4)
+		return;
+	auto wiiRemote = &wiiRemoteManager->WiiRemotes[playerIndex];
+	if (wiiRemote->IsConnected())
+	{
+		if (wiiRemote->Speaker.bEnabled)
+			wiiRemote->PlaySquareWave(static_cast<speaker_freq>(frequency), static_cast<BYTE>(volume));
+	}
+}
 
+void FWiiRemotePlugin::PlaySample(int32 playerIndex, FWiiRemoteSample* sample, WiiRemoteSpeakerFrequency frequency, int32 volume)
+{
+	if (playerIndex < 0 || playerIndex > 4)
+		return;
+	auto wiiRemote = &wiiRemoteManager->WiiRemotes[playerIndex];
+	if (wiiRemote->IsConnected())
+	{
+		if (wiiRemote->Speaker.bEnabled)
+		{
+			wiimote_sample sam;
+			sam.freq = static_cast<speaker_freq>(sample->Frequency);
+			sam.length = sample->Length;
+			sam.samples = sample->Samples.GetData();
+			wiiRemote->PlaySample(sam, volume, static_cast<speaker_freq>(frequency));
+		}
+	}
 }
 
 FWiiRemoteDeviceData* FWiiRemotePlugin::LatestData(int32 wiiRemoteId)

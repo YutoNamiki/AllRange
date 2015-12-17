@@ -33,34 +33,40 @@ void IWiiRemoteDelegate::OnMotionPlusExtensionConnected(int32 wiiRemoteId) { }
 void IWiiRemoteDelegate::OnMotionPlusExtensionDisconnected(int32 wiiRemoteId) { }
 void IWiiRemoteDelegate::OnExtensionDisconnected(int32 wiiRemoteId) { }
 
-void IWiiRemoteDelegate::SetLED(WiiRemoteLED ledBits)
+void IWiiRemoteDelegate::SetLED(int32 playerIndex, WiiRemoteLED ledBits)
 {
-
+	if (IWiiRemotePlugin::IsAvailable())
+		IWiiRemotePlugin::Get().SetLED(playerIndex, ledBits);
 }
 
-void IWiiRemoteDelegate::SetRumble(bool on)
+void IWiiRemoteDelegate::SetRumble(int32 playerIndex, bool on)
 {
-
+	if (IWiiRemotePlugin::IsAvailable())
+		IWiiRemotePlugin::Get().SetRumble(playerIndex, on);
 }
 
-void IWiiRemoteDelegate::SetRumbleForAsync(int32 milliseconds)
+void IWiiRemoteDelegate::SetRumbleForAsync(int32 playerIndex, int32 milliseconds)
 {
-
+	if (IWiiRemotePlugin::IsAvailable())
+		IWiiRemotePlugin::Get().SetRumbleForAsync(playerIndex, milliseconds);
 }
 
-void IWiiRemoteDelegate::MuteSpeaker(bool on)
+void IWiiRemoteDelegate::EnableSpeaker(int32 playerIndex, bool on)
 {
-
+	if (IWiiRemotePlugin::IsAvailable())
+		IWiiRemotePlugin::Get().EnableSpeaker(playerIndex, on);
 }
 
-void IWiiRemoteDelegate::PlaySquareWave(WiiRemoteSpeakerFrequency frequency, int32 volume)
+void IWiiRemoteDelegate::PlaySquareWave(int32 playerIndex, WiiRemoteSpeakerFrequency frequency, int32 volume)
 {
-
+	if (IWiiRemotePlugin::IsAvailable())
+		IWiiRemotePlugin::Get().PlaySquareWave(playerIndex, frequency, volume);
 }
 
-void IWiiRemoteDelegate::PlaySample(WiiRemoteSpeakerFrequency frequency, int32 volume)
+void IWiiRemoteDelegate::PlaySample(int32 playerIndex, FWiiRemoteSample sample, WiiRemoteSpeakerFrequency frequency, int32 volume)
 {
-
+	if (IWiiRemotePlugin::IsAvailable())
+		IWiiRemotePlugin::Get().PlaySample(playerIndex, &sample, frequency, volume);
 }
 
 FWiiRemoteDeviceData* IWiiRemoteDelegate::WiiRemoteLatestData(int32 wiiRemoteId)

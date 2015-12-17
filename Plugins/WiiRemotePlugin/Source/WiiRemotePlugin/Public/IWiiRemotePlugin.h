@@ -6,8 +6,9 @@
 
 class IWiiRemoteDelegate;
 struct FWiiRemoteDeviceData;
+struct FWiiRemoteSample;
 enum class WiiRemoteSpeakerFrequency : uint8;
-
+enum class WiiRemoteLED : uint8;
 
 class IWiiRemotePlugin : public IModuleInterface
 {
@@ -27,11 +28,12 @@ public:
 	virtual void SetDelegate(IWiiRemoteDelegate* newDelegate) { }
 	virtual void RemoveDelgate() { }
 	virtual void Tick(float deltaTime) { }
-	virtual void SetRumble(bool on) { }
-	virtual void SetRumbleForAsync(int32 milliseconds) { }
-	virtual void MuteSpeaker(bool on) { }
-	virtual void PlaySquareWave(WiiRemoteSpeakerFrequency frequency, int32 volume) { }
-	virtual void PlaySample(WiiRemoteSpeakerFrequency frequency, int32 volume) { }
+	virtual void SetLED(int32 playerIndex, WiiRemoteLED ledBits) { }
+	virtual void SetRumble(int32 playerIndex, bool on) { }
+	virtual void SetRumbleForAsync(int32 playerIndex, int32 milliseconds) { }
+	virtual void EnableSpeaker(int32 playerIndex, bool on) { }
+	virtual void PlaySquareWave(int32 playerIndex, WiiRemoteSpeakerFrequency frequency, int32 volume) { }
+	virtual void PlaySample(int32 playerIndex, FWiiRemoteSample* sample, WiiRemoteSpeakerFrequency frequency, int32 volume) { }
 	virtual FWiiRemoteDeviceData* LatestData(int32 wiiRemoteId) { return nullptr; }
 	virtual void MaxWiiRemoteId(int32& wiiRemoteId) { }
 	virtual bool IsValidDeviceId(int32 deviceId) = 0;

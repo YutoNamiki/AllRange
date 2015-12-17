@@ -209,36 +209,6 @@ void IWiiRemoteDelegateBlueprint::OnExtensionDisconnected(int32 wiiRemoteId)
 		IWiiRemoteInterface::Execute_OnExtensionDisconnected(InterfaceDelegate, InternalControllerForId(wiiRemoteId));
 }
 
-void IWiiRemoteDelegateBlueprint::SetLED(WiiRemoteLED ledBits)
-{
-
-}
-
-void IWiiRemoteDelegateBlueprint::SetRumble(bool on)
-{
-
-}
-
-void IWiiRemoteDelegateBlueprint::SetRumbleForAsync(int32 milliseconds)
-{
-
-}
-
-void IWiiRemoteDelegateBlueprint::MuteSpeaker(bool on)
-{
-
-}
-
-void IWiiRemoteDelegateBlueprint::PlaySquareWave(WiiRemoteSpeakerFrequency frequency, int32 volume)
-{
-
-}
-
-void IWiiRemoteDelegateBlueprint::PlaySample(WiiRemoteSpeakerFrequency frequency, int32 volume)
-{
-
-}
-
 bool IWiiRemoteDelegateBlueprint::IsWiiRemoteValidId(int32 wiiRemoteId)
 {
 	return (IsValidDelegate() && IWiiRemoteDelegate::IsWiiRemoteValidId(wiiRemoteId));

@@ -377,7 +377,6 @@ void UWiiRemoteManager::OnOrientationChanged(wiimote* wiiRemote, float pitch, fl
 		return;
 	if (WiiRemoteDelegate)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("WiiRemote Orientation Pitch:%f, Roll:%f"), pitch, roll);
 		Data[index].OrientationPitch = pitch;
 		Data[index].OrientationRoll = roll;
 		if (IsWiiRemoteValidForInputMapping(wiiRemote->UniqueID))
