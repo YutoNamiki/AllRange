@@ -780,7 +780,7 @@ void wiimote::SetReportType(input_report type, bool continuous)
 void wiimote::SetLEDs(BYTE led_bits)
 {
 	(IsConnected());
-	if (!IsConnected() || bInitInProgress)
+	if (!IsConnected())
 		return;
 
 	(led_bits <= 0x0f);

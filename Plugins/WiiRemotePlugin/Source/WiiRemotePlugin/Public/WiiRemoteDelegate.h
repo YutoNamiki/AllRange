@@ -218,6 +218,8 @@ struct FWiiRemoteDeviceData
 	bool IsConnectBalanceBoard = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
 	bool IsConnectMotionPlus = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WiiRemoteInput")
+	bool IsInitialized = false;
 };
 
 UINTERFACE(MinimalAPI)

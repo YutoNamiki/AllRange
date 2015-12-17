@@ -1,11 +1,11 @@
 #pragma once
 
-#include "HAL/ThreadingBase.h"
+#include "AllowWindowsPlatformTypes.h"
+#include "wiimote.h"
+#include "HideWindowsPlatformTypes.h"
+
 #include "WiiRemoteManager.generated.h"
 
-class wiimote;
-enum state_change_flags;
-struct wiimote_state;
 struct FWiiRemoteButtons;
 struct FWiiRemoteDot;
 struct FWiiRemoteNunchukButtons;
@@ -14,17 +14,39 @@ struct FWiiRemoteBalanceBoard;
 struct FWiiRemoteDeviceData;
 class IWiiRemoteDelegate;
 
-class WiiRemoteConnectionWorker : public FRunnable
+USTRUCT(BlueprintType)
+struct FWiiRemoteInputChangeFlags
 {
-public:
-	WiiRemoteConnectionWorker(class UWiiRemoteManager& wiiRemoteManager, TArray<wiimote*>& wiiRemotes);
-	virtual uint32 Run() override;
-	virtual void Stop() override;
-
-private:
-	FThreadSafeCounter stopTaskCounter;
-	UWiiRemoteManager* wiiRemoteManager;
-	TArray<wiimote*>* wiiRemotes;
+	GENERATED_USTRUCT_BODY()
+		
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsButtonsChanged = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsAccelChanged = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsOrientationChanged = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsIRChanged = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsNunchukButtonsChanged = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsNunchukAccelChanged = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsNunchukOrientationChanged = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsNunchukJoystickChanged = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsClassicButtonsChanged = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsClassicJoystickLChanged = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsClassicJoystickRChanged = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsClassicTriggerChanged = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsBalanceWeightChanged = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsMotionPlusSpeedChanged = false;
 };
 
 UCLASS()
@@ -33,10 +55,13 @@ class WIIREMOTEPLUGIN_API UWiiRemoteManager : public UObject
 	GENERATED_BODY()
 
 public:
-	TArray<wiimote*> WiiRemotes;
+	//TArray<wiimote> WiiRemotes;
+	wiimote WiiRemotes[4];
 	TArray<FWiiRemoteDeviceData> Data;
-	uint64 LastPairedWiiRemoteID;
+	TArray<FWiiRemoteInputChangeFlags> ChangeFlags;
+	TArray<uint64> LastPairedWiiRemoteID;
 	IWiiRemoteDelegate* WiiRemoteDelegate;
+	
 
 	UWiiRemoteManager(class FObjectInitializer const& objectInitializer);
 	~UWiiRemoteManager();
@@ -84,9 +109,6 @@ public:
 	static void SetWiiRemoteBalanceBoard(wiimote& wiiRemote, FWiiRemoteBalanceBoard& balanceBoard);
 	
 private:
-	FRunnableThread* connectionThread;
-	WiiRemoteConnectionWorker* connectionWorker;
-	
 	static bool EmitKeyUpEventForKey(FKey key, int32 user, bool repeat);
 	static bool EmitKeyDownEventForKey(FKey key, int32 user, bool repeat);
 	static bool EmitAnalogInputEventForKey(FKey key, float value, int32 user);

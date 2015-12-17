@@ -26,7 +26,7 @@ bool IWiiRemoteDelegateBlueprint::IsValidDelegate()
 	return (InterfaceDelegate != nullptr);
 }
 
-UWiiRemoteController * IWiiRemoteDelegateBlueprint::InternalAddController(int32 newId)
+UWiiRemoteController* IWiiRemoteDelegateBlueprint::InternalAddController(int32 newId)
 {
 	auto validUObject = Cast<UObject>(ValidSelfPointer);
 	UWiiRemoteController* controller;
