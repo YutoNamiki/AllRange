@@ -4,8 +4,8 @@
 #include <mutex>
 #include <string>
 
-class UDPSocket;
 class DataCollector;
+class DataTransceiver;
 
 namespace std
 {
@@ -27,8 +27,8 @@ public:
 	static void Run();
 
 private:
-	std::shared_ptr<UDPSocket> udpSocket;
 	std::shared_ptr<DataCollector> collector;
+	std::shared_ptr<DataTransceiver> transceiver;
 	std::shared_ptr<myo::Hub> hub;
 	std::shared_ptr<std::mutex> mutex;
 	

@@ -163,14 +163,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DataCollector.cpp" />
+    <ClCompile Include="DataTransceiver.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MyoConnecter.cpp" />
-    <ClCompile Include="UDPSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataCollector.h" />
+    <ClInclude Include="DataTransceiver.h" />
     <ClInclude Include="MyoConnecter.h" />
-    <ClInclude Include="UDPSocket.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

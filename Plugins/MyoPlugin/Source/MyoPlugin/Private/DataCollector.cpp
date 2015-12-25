@@ -1,9 +1,10 @@
 #include "MyoPluginPrivatePCH.h"
 #include "DataCollector.h"
 #include "FMyoPlugin.h"
-#include "Networking.h"
-#include "Sockets.h"
-#include "SocketSubsystem.h"
+
+#include "AllowWindowsPlatformTypes.h"
+#include <Windows.h>
+#include "HideWindowsPlatformTypes.h"
 
 static const FRotator OrientationScale = FRotator(1.0f / 90.0f, 1.0f / 180.0f, 1.0f / 180.0f);
 static const float GyroScale = 1.0f / 45.0f;
@@ -17,133 +18,87 @@ FVector ConvertAccelerationToBodySpace(FVector armAcceleration, FRotator orienta
 FRotator ConvertOrientationToArmSpace(FRotator convertedOrientation, FRotator armCorrection, MyoArmDirection direction);
 FString ConvertPoseToString(MyoPose pose);
 
-SendDataWorker::SendDataWorker(FCriticalSection& mutex, FString myoDriverIP, uint32 port, TArray<uint8>& sendData)
+SendDataWorker::SendDataWorker(FCriticalSection& mutex, TArray<uint8>& sendData)
 {
 	this->mutex = &mutex;
-	this->myoDriverIP = myoDriverIP;
-	this->port = port;
 	this->sendData = &sendData;
-}
-
-SendDataWorker::~SendDataWorker()
-{
-	
-}
-
-bool SendDataWorker::Init()
-{
-	ipv4Address = new FIPv4Address();
-	FIPv4Address::Parse(myoDriverIP, *ipv4Address);
-	socketSubSystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
-	address = new TSharedRef<FInternetAddr>(socketSubSystem->CreateInternetAddr(ipv4Address->GetValue(), port));
-	socket = socketSubSystem->CreateSocket(NAME_DGram, TEXT("MyoSendSocket"), true);
-	socket->SetNonBlocking(true);
-	socket->SetReuseAddr(true);
-
-	return true;
+	this->sendData->Init(-1, 256);
 }
 
 uint32 SendDataWorker::Run()
 {
-	FString message = "Hello, Myo!";
-	TCHAR* charMessage = message.GetCharArray().GetData();
-	int32 sendSize = FCString::Strlen(charMessage);
-	int32 sendSent = 0;
-	auto serializedMessage = reinterpret_cast<uint8*>(TCHAR_TO_UTF8(charMessage));
+	const auto fileMapName = "MyoReceiveData";
+	char* pString = nullptr;
+	HANDLE handleFileMemory = nullptr;
+
 	while (stopTaskCounter.GetValue() == 0)
 	{
-		if (socket->SendTo(serializedMessage, sendSize, sendSent, **address))
-		{
-			auto logString = FString("SendMessage: ") + FString(UTF8_TO_TCHAR(reinterpret_cast<char*>(&serializedMessage)));
-			//UE_LOG(LogTemp, Warning, TEXT("%s"), *logString);
-		}
-		FPlatformProcess::Sleep(1.0f / 60.0f);
+		handleFileMemory = CreateFileMappingA(reinterpret_cast<HANDLE>(-1), nullptr, PAGE_READWRITE, 0, static_cast<unsigned long>(sendData->Num() + 1), fileMapName);
+		pString = static_cast<char*>(MapViewOfFile(handleFileMemory, FILE_MAP_ALL_ACCESS, 0, 0, 0));
+		if (pString == nullptr)
+			continue;
+		auto message = reinterpret_cast<char*>(sendData->GetData());
+		auto size = sendData->Num();
+		memcpy_s(pString, size, message, size);
+		if (UnmapViewOfFile(pString) == 0)
+			continue;
+		pString = nullptr;
+		FPlatformProcess::Sleep(1.0f / 90.0f);
 	}
-
-	socket->Close();
-	delete address;
-	delete ipv4Address;
-	delete socket;
-	address = nullptr;
-	ipv4Address = nullptr;
-	socket = nullptr;
+	CloseHandle(handleFileMemory);
+	handleFileMemory = nullptr;
+	
 	return 0;
 }
 
 void SendDataWorker::Stop()
 {
+	
 	stopTaskCounter.Increment();
 }
 
-void SendDataWorker::Exit()
-{
-	
-}
-
-ReceiveDataWorker::ReceiveDataWorker(FCriticalSection& mutex, FString myoDriverIP, uint32 port, TArray<uint8>& receiveData)
+ReceiveDataWorker::ReceiveDataWorker(FCriticalSection& mutex, TArray<uint8>& receiveData)
 {
 	this->mutex = &mutex;
-	this->myoDriverIP = myoDriverIP;
-	this->port = port;
 	this->receiveData = &receiveData;
-}
-
-ReceiveDataWorker::~ReceiveDataWorker()
-{
-	
-}
-
-bool ReceiveDataWorker::Init()
-{
-	ipv4Address = new FIPv4Address();
-	FIPv4Address::Parse(myoDriverIP, *ipv4Address);
-	socketSubSystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
-	address = new TSharedRef<FInternetAddr>(socketSubSystem->CreateInternetAddr(ipv4Address->GetValue(), port));
-	socket = socketSubSystem->CreateSocket(NAME_DGram, TEXT("MyoSendSocket"), true);
-	socket->SetNonBlocking(true);
-	socket->SetReuseAddr(true);
-	socket->Bind(**address);
-
-	return true;
+	this->receiveData->Init(0, 58);
 }
 
 uint32 ReceiveDataWorker::Run()
 {
-	int32 receiveSent = 0;
+	const auto fileMapName = "MyoSendData";
+	char* pString = nullptr;
+	HANDLE handleFileMemory = nullptr;
+
 	while (stopTaskCounter.GetValue() == 0)
 	{
-		TArray<uint8> receive;
-		receive.Init(0, 58);
-		receiveSent = 0;
-		if (socket->RecvFrom(receive.GetData(), receive.Num(), receiveSent, **address))
+		handleFileMemory = OpenFileMappingA(FILE_MAP_ALL_ACCESS, 0, fileMapName);
+		pString = static_cast<char*>(MapViewOfFile(handleFileMemory, FILE_MAP_ALL_ACCESS, 0, 0, 0));
+		if (pString == nullptr)
+			continue;
 		{
-			auto receiveMessage = reinterpret_cast<char*>(receive.GetData());
-			auto logString = FString("ReceiveMessage: ") + FString(receiveMessage);
 			FScopeLock lock(mutex);
-			//UE_LOG(LogTemp, Warning, TEXT("%s"), *logString);
-			*receiveData = receive;
+			for (auto i = 0; i < receiveData->Num(); i++)
+				(*receiveData)[i] = pString[i];
 		}
-		FPlatformProcess::Sleep(1.0f / 60.0f);
+		if (UnmapViewOfFile(pString) == 0)
+			continue;
+		CloseHandle(handleFileMemory);
+		handleFileMemory = nullptr;
+		pString = nullptr;
+		FPlatformProcess::Sleep(1.0f / 90.0f);
 	}
-
-	socket->Close();
-	delete address;
-	delete ipv4Address;
-	delete socket;
-	address = nullptr;
-	ipv4Address = nullptr;
-	socket = nullptr;
+	if (handleFileMemory != nullptr)
+	{
+		CloseHandle(handleFileMemory);
+		handleFileMemory = nullptr;
+	}
 	return 0;
 }
 
 void ReceiveDataWorker::Stop()
 {
 	stopTaskCounter.Increment();
-}
-
-void ReceiveDataWorker::Exit()
-{
-	
 }
 
 UDataCollector::UDataCollector(class FObjectInitializer const& objectInitializer)
@@ -513,13 +468,19 @@ void UDataCollector::LockEachMyo()
 bool UDataCollector::Startup()
 {
 	if (sendDataWorker == nullptr)
-		sendDataWorker = new SendDataWorker(mutex, myoDriverIP, sendPort, sendData);
+		sendDataWorker = new SendDataWorker(mutex, sendData);
 	if (receiveDataWorker == nullptr)
-		receiveDataWorker = new ReceiveDataWorker(mutex, myoDriverIP, receivePort, receiveData);
+		receiveDataWorker = new ReceiveDataWorker(mutex, receiveData);
 	if (sendThread == nullptr)
-		sendThread = FRunnableThread::Create(sendDataWorker, TEXT("SendDataThread"));
+	{
+		auto name = FString("SendDataThread_") + FString::FromInt(sendThreadCount++);
+		sendThread = FRunnableThread::Create(sendDataWorker, *name);
+	}
 	if (receiveThread == nullptr)
-		receiveThread = FRunnableThread::Create(receiveDataWorker, TEXT("ReceiveDataThread"));
+	{
+		auto name = FString("ReceiveDataThread_") + FString::FromInt(receiveThreadCount++);
+		receiveThread = FRunnableThread::Create(receiveDataWorker, *name);
+	}
 
 	return true;
 }

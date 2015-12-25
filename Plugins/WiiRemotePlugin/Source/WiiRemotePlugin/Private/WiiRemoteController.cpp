@@ -7,6 +7,7 @@ void UWiiRemoteController::SetFromWiiRemoteDevciceData(FWiiRemoteDeviceData* dat
 {
 	this->BatteryPercent = data->BatteryPercent;
 	this->Buttons = data->Buttons;
+	this->Dots.Init(FWiiRemoteDot(), 4);
 	this->Dots = data->Dots;
 	this->Acceleration = data->Acceleration;
 	this->OrientationPitch = data->OrientationPitch;

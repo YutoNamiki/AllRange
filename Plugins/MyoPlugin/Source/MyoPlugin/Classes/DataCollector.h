@@ -4,30 +4,17 @@
 #include "HAL/ThreadingBase.h"
 #include "DataCollector.generated.h"
 
-class FIPv4Address;
-class FSocket;
-class FInternetAddr;
-class ISocketSubsystem;
-
 class SendDataWorker : public FRunnable
 {
 public:
 
-	SendDataWorker(FCriticalSection& mutex, FString myoDriverIP, uint32 port, TArray<uint8>& sendData);
-	virtual ~SendDataWorker();
-	virtual bool Init() override;
+	SendDataWorker(FCriticalSection& mutex, TArray<uint8>& sendData);
 	virtual uint32 Run() override;
 	virtual void Stop() override;
-	virtual void Exit() override;
 
 private:
 	FThreadSafeCounter stopTaskCounter;
-	ISocketSubsystem* socketSubSystem = nullptr;
-	FSocket* socket = nullptr;
-	FIPv4Address* ipv4Address = nullptr;
-	TSharedRef<FInternetAddr>* address;
-	FString myoDriverIP;
-	uint32 port;
+
 	TArray<uint8>* sendData;
 	FCriticalSection* mutex;
 };
@@ -36,21 +23,12 @@ class ReceiveDataWorker : public FRunnable
 {
 public:
 
-	ReceiveDataWorker(FCriticalSection& mutex, FString myoDriverIP, uint32 port, TArray<uint8>& receiveData);
-	virtual ~ReceiveDataWorker();
-	virtual bool Init() override;
+	ReceiveDataWorker(FCriticalSection& mutex, TArray<uint8>& receiveData);
 	virtual uint32 Run() override;
 	virtual void Stop() override;
-	virtual void Exit() override;
 
 private:
 	FThreadSafeCounter stopTaskCounter;
-	ISocketSubsystem* socketSubSystem = nullptr;
-	FSocket* socket = nullptr;
-	FIPv4Address* ipv4Address = nullptr;
-	TSharedRef<FInternetAddr>* address;
-	FString myoDriverIP;
-	uint32 port;
 	TArray<uint8>* receiveData;
 	FCriticalSection* mutex;
 };
@@ -121,9 +99,6 @@ public:
 	static FRotator CombineRotators(FRotator a, FRotator b);
 
 private:
-	FString myoDriverIP = "127.0.0.1";
-	uint32 sendPort = 8000;
-	uint32 receivePort = 8001;
 	TArray<uint8> sendData;
 	TArray<uint8> receiveData;
 	FCriticalSection mutex;
@@ -132,5 +107,6 @@ private:
 	FRunnableThread* receiveThread = nullptr;
 	SendDataWorker* sendDataWorker = nullptr;
 	ReceiveDataWorker* receiveDataWorker = nullptr;
-
+	int32 sendThreadCount = 0;
+	int32 receiveThreadCount = 0;
 };

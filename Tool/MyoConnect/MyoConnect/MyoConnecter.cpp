@@ -4,15 +4,9 @@
 #include <conio.h>
 #include <myo/Myo.hpp>
 #include "DataCollector.h"
-#include "UDPSocket.h"
+#include "DataTransceiver.h"
 
 #pragma comment(lib, "kernel32.lib")
-
-union IntAndFloat
-{
-	int Integer;
-	float Float;
-};
 
 const std::string MyoConnecter::LogString = std::string("MyoConnect: ");
 const std::string MyoConnecter::ErrorString = std::string("Error: ");
@@ -22,7 +16,7 @@ MyoConnecter::MyoConnecter()
 	mutex = std::make_shared<std::mutex>();
 	hub = std::make_shared<myo::Hub>("com.tool.myoconnect");
 	collector = std::make_shared<DataCollector>(mutex);
-	udpSocket = std::make_shared<UDPSocket>(mutex);
+	transceiver = std::make_shared<DataTransceiver>(mutex);
 }
 
 MyoConnecter::~MyoConnecter()
@@ -48,7 +42,7 @@ bool MyoConnecter::Initializer()
 	collector->MyoInfos.push_back(MyoInformation());
 	collector->MyoInfos[0].MyoPtr = myo;
 	collector->MyoInfos[0].OnPair = true;
-	if (!udpSocket->Initialize())
+	if (!transceiver->Initialize())
 		return false;
 
 	mutex->lock();
@@ -66,7 +60,7 @@ bool MyoConnecter::Update()
 	hub->run(1000 / FPS);
 	for (auto myo : collector->MyoInfos)
 	{
-		udpSocket->SetSendMessage(myo);
+		transceiver->SetSendMessage(myo);
 		//collector->PrintData(myo);
 	}
 	return true;
@@ -82,7 +76,7 @@ bool MyoConnecter::GetInputEscapeKey()
 			mutex->lock();
 			std::cout << LogString << "ESC‚ª‰Ÿ‚³‚ê‚Ü‚µ‚½B" << std::endl;
 			mutex->unlock();
-			udpSocket->SetIsFinish(true);
+			transceiver->SetIsFinish(true);
 			return true;
 		}
 		else if (key == 0x52 || key == 0x72)
