@@ -61,6 +61,7 @@ bool MyoConnecter::Update()
 	for (auto myo : collector->MyoInfos)
 	{
 		transceiver->SetSendMessage(myo);
+		transceiver->GetReceiveMessage(hub, collector->KnownMyos);
 		//collector->PrintData(myo);
 	}
 	return true;

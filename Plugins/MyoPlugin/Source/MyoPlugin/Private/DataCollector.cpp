@@ -18,31 +18,35 @@ FVector ConvertAccelerationToBodySpace(FVector armAcceleration, FRotator orienta
 FRotator ConvertOrientationToArmSpace(FRotator convertedOrientation, FRotator armCorrection, MyoArmDirection direction);
 FString ConvertPoseToString(MyoPose pose);
 
-SendDataWorker::SendDataWorker(FCriticalSection& mutex, TArray<uint8>& sendData)
+SendDataWorker::SendDataWorker(FCriticalSection& mutex, TArray<OutputInformation>& sendData)
 {
 	this->mutex = &mutex;
 	this->sendData = &sendData;
-	this->sendData->Init(-1, 256);
 }
 
 uint32 SendDataWorker::Run()
 {
 	const auto fileMapName = "MyoReceiveData";
-	char* pString = nullptr;
+	auto size = sizeof(OutputInformation);
+	OutputInformation* pData = nullptr;
 	HANDLE handleFileMemory = nullptr;
 
+	handleFileMemory = CreateFileMappingA(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, static_cast<unsigned long>(size), fileMapName);
 	while (stopTaskCounter.GetValue() == 0)
 	{
-		handleFileMemory = CreateFileMappingA(reinterpret_cast<HANDLE>(-1), nullptr, PAGE_READWRITE, 0, static_cast<unsigned long>(sendData->Num() + 1), fileMapName);
-		pString = static_cast<char*>(MapViewOfFile(handleFileMemory, FILE_MAP_ALL_ACCESS, 0, 0, 0));
-		if (pString == nullptr)
+		if (sendData->Num() <= 0)
 			continue;
-		auto message = reinterpret_cast<char*>(sendData->GetData());
-		auto size = sendData->Num();
-		memcpy_s(pString, size, message, size);
-		if (UnmapViewOfFile(pString) == 0)
+		pData = static_cast<OutputInformation*>(MapViewOfFile(handleFileMemory, FILE_MAP_ALL_ACCESS, 0, 0, 0));
+		if (pData == nullptr)
 			continue;
-		pString = nullptr;
+		{
+			FScopeLock lock(mutex);
+			memcpy_s(pData, size, &(*sendData)[0], size);
+			sendData->RemoveAt(0);
+		}
+		if (UnmapViewOfFile(pData) == 0)
+			continue;
+		pData = nullptr;
 		FPlatformProcess::Sleep(1.0f / 90.0f);
 	}
 	CloseHandle(handleFileMemory);
@@ -298,8 +302,7 @@ void UDataCollector::OnPair(uint64 myoId)
 		FMyoDeviceData data;
 		data.XDirection = MyoArmDirection::Unknown;
 		data.Arm = MyoArm::Unknown;
-		if (CorrectionAvailable)
-			data.ArmSpaceCorrection = ArmSpaceCorrection;
+		data.ArmSpaceCorrection = ArmSpaceCorrection;
 		Data.Add(data);
 	}
 	if (MyoDelegate != nullptr)
@@ -334,9 +337,6 @@ void UDataCollector::OnOrientationData(uint64 myoId, FQuat& quat)
 			EmitAnalogInputEventForKey(EMyoKeys::OrientationRoll, Data[myoIndex].ArmOrientation.Roll * OrientationScale.Roll, 0);
 		}
 	}
-	/*UE_LOG(LogTemp, Warning, TEXT("Orientation: { Pitch: %f, Yaw: %f, Roll: %f } ArmOrientation { Pitch: %f, Yaw: %f, Roll: %f }"),
-		Data[myoIndex].Orientation.Pitch, Data[myoIndex].Orientation.Yaw, Data[myoIndex].Orientation.Roll,
-		Data[myoIndex].ArmOrientation.Pitch, Data[myoIndex].ArmOrientation.Yaw, Data[myoIndex].ArmOrientation.Roll);*/
 }
 
 void UDataCollector::OnAccelerometerData(uint64 myoId, FVector& accel)
@@ -449,14 +449,29 @@ int32 UDataCollector::MyoIndexForMyo(uint64 myoId)
 	return IdentifyMyo(myoId) - 1;
 }
 
-void UDataCollector::UnlockHoldEachMyo()
+void UDataCollector::UnlockMyo(uint64 myoId, MyoUnlockType type)
 {
-	
+	sendData.Add(OutputInformation());
+	auto& data = sendData.Last();
+	data.Ptr = reinterpret_cast<void*>(myoId);
+	data.UnlockType = (type == MyoUnlockType::Timed) ? false : true;
+	data.IsLockOrder = false;
+	data.LockingPolicy = -1;
+	data.StreamEmgType = -1;
+	data.Vibration = -1;
 }
 
-void UDataCollector::LockEachMyo()
+void UDataCollector::LockMyo(uint64 myoId)
 {
-
+	auto myoIndex = MyoIndexForMyo(myoId);
+	sendData.Add(OutputInformation());
+	auto& data = sendData.Last();
+	data.Ptr = reinterpret_cast<void*>(myoId);
+	data.IsLockOrder = true;
+	data.LockingPolicy = -1;
+	data.StreamEmgType = -1;
+	data.UnlockType = -1;
+	data.Vibration = -1;
 }
 
 bool UDataCollector::Startup()
@@ -475,6 +490,7 @@ bool UDataCollector::Startup()
 		auto name = FString("ReceiveDataThread_") + FString::FromInt(receiveThreadCount++);
 		receiveThread = FRunnableThread::Create(receiveDataWorker, *name);
 	}
+	Enabled = true;
 
 	return true;
 }
@@ -515,7 +531,39 @@ void UDataCollector::ResetHub()
 
 void UDataCollector::SetLockingPolicy(MyoLockingPolicy policy)
 {
+	LockingPolicy = policy;
+	sendData.Add(OutputInformation());
+	auto& data = sendData.Last();
+	data.Ptr = nullptr;
+	data.IsLockOrder = false;
+	data.StreamEmgType = -1;
+	data.UnlockType = -1;
+	data.LockingPolicy = (policy == MyoLockingPolicy::None) ? 0 : 1;
+	data.Vibration = -1;
+}
 
+void UDataCollector::SetStreamEmg(uint64 myoId, MyoStreamEmgType type)
+{
+	sendData.Add(OutputInformation());
+	auto& data = sendData.Last();
+	data.Ptr = reinterpret_cast<void*>(myoId);
+	data.StreamEmgType = static_cast<char>(type);
+	data.IsLockOrder = false;
+	data.LockingPolicy = -1;
+	data.UnlockType = -1;
+	data.Vibration = -1;
+}
+
+void UDataCollector::VibrateDevice(uint64 myoId, MyoVibrationType type)
+{
+	sendData.Add(OutputInformation());
+	auto& data = sendData.Last();
+	data.Ptr = reinterpret_cast<void*>(myoId);
+	data.Vibration = static_cast<char>(type);
+	data.IsLockOrder = false;
+	data.LockingPolicy = -1;
+	data.StreamEmgType = -1;
+	data.UnlockType = -1;
 }
 
 FRotator UDataCollector::CombineRotators(FRotator a, FRotator b)

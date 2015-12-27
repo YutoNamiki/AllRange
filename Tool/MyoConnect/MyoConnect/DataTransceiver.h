@@ -1,7 +1,7 @@
 #pragma once
 
-#include <array>
 #include <memory>
+#include <vector>
 
 struct MyoInformation;
 
@@ -9,6 +9,11 @@ namespace std
 {
 	class mutex;
 	class thread;
+}
+namespace myo
+{
+	class Myo;
+	class Hub;
 }
 
 struct InputInformation
@@ -41,6 +46,16 @@ struct InputInformation
 	bool OnLock;
 };
 
+struct OutputInformation
+{
+	void* Ptr;
+	char Vibration;
+	char LockingPolicy;
+	char UnlockType;
+	char StreamEmgType;
+	bool IsLockOrder;
+};
+
 class DataTransceiver
 {
 public:
@@ -48,7 +63,7 @@ public:
 	~DataTransceiver();
 	bool Initialize();
 	void SetSendMessage(MyoInformation myoInfo);
-	void GetReceiveMessage();
+	void GetReceiveMessage(std::shared_ptr<myo::Hub>& hub, std::vector<myo::Myo*>& myos);
 
 	bool GetIsFinish() const { return isFinish; }
 	void SetIsFinish(const bool value) { isFinish = value; }
@@ -58,13 +73,14 @@ private:
 	std::shared_ptr<std::thread> receiveThread;
 	std::shared_ptr<std::mutex> mutex;
 	InputInformation sendData;
-	std::array<char, 256> receiveData;
+	OutputInformation receiveData;
 	bool isFinish = false;
 
 	static const std::string LogString;
 	static const std::string ErrorString;
 
 	static void SendMessageTo(std::shared_ptr<std::mutex>& mutex, InputInformation& data, bool& isFinish);
-	static void ReceiveMessageFrom(std::shared_ptr<std::mutex>& mutex,std::array<char, 256>& data, bool& isFinish);
+	static void ReceiveMessageFrom(std::shared_ptr<std::mutex>& mutex, OutputInformation& data, bool& isFinish);
+	int MyoIndexForMyo(void* myoPtr, std::vector<myo::Myo*>& myos);
 };
 

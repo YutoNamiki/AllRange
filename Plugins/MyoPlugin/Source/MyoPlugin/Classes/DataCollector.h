@@ -34,18 +34,28 @@ struct InputInformation
 	bool OnLock;
 };
 
+struct OutputInformation
+{
+	void* Ptr;
+	char Vibration;
+	char LockingPolicy;
+	char UnlockType;
+	char StreamEmgType;
+	bool IsLockOrder;
+};
+
 class SendDataWorker : public FRunnable
 {
 public:
 
-	SendDataWorker(FCriticalSection& mutex, TArray<uint8>& sendData);
+	SendDataWorker(FCriticalSection& mutex, TArray<OutputInformation>& sendData);
 	virtual uint32 Run() override;
 	virtual void Stop() override;
 
 private:
 	FThreadSafeCounter stopTaskCounter;
 
-	TArray<uint8>* sendData;
+	TArray<OutputInformation>* sendData;
 	FCriticalSection* mutex;
 };
 
@@ -119,17 +129,19 @@ public:
 	uint64 LastValidMyo();
 	bool MyoIsValidForInputMapping(uint64 myoId);
 	int32 MyoIndexForMyo(uint64 myoId);
-	void UnlockHoldEachMyo();
-	void LockEachMyo();
+	void UnlockMyo(uint64 myoId, MyoUnlockType type = MyoUnlockType::Hold);
+	void LockMyo(uint64 myoId);
 	bool Startup();
 	void ShutDown();
 	void ResetHub();
 	void SetLockingPolicy(MyoLockingPolicy policy);
-
+	void SetStreamEmg(uint64 myoId, MyoStreamEmgType type);
+	void VibrateDevice(uint64 myoId, MyoVibrationType type);
+		
 	static FRotator CombineRotators(FRotator a, FRotator b);
 
 private:
-	TArray<uint8> sendData;
+	TArray<OutputInformation> sendData;
 	InputInformation receiveData;
 	FCriticalSection mutex;
 

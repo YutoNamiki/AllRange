@@ -6,6 +6,7 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
+#include <myo/Myo.hpp>
 
 const std::string DataTransceiver::LogString = std::string("DataTransceiver: ");
 const std::string DataTransceiver::ErrorString = std::string("Error: ");
@@ -13,8 +14,12 @@ const std::string DataTransceiver::ErrorString = std::string("Error: ");
 DataTransceiver::DataTransceiver(std::shared_ptr<std::mutex> mutex)
 {
 	this->mutex = mutex;
-	for (auto i = 0; i < receiveData.size(); i++)
-		receiveData[i] = 0;
+	receiveData.Ptr = nullptr;
+	receiveData.IsLockOrder = false;
+	receiveData.LockingPolicy = -1;
+	receiveData.StreamEmgType = -1;
+	receiveData.UnlockType = -1;
+	receiveData.Vibration = -1;
 }
 
 DataTransceiver::~DataTransceiver()
@@ -70,9 +75,38 @@ void DataTransceiver::SetSendMessage(MyoInformation myoInfo)
 	sendData.OnLock = myoInfo.OnLock;
 }
 
-void DataTransceiver::GetReceiveMessage()
+void DataTransceiver::GetReceiveMessage(std::shared_ptr<myo::Hub>& hub, std::vector<myo::Myo*>& myos)
 {
-
+	if (receiveData.LockingPolicy != -1)
+		hub->setLockingPolicy(static_cast<myo::Hub::LockingPolicy>(receiveData.LockingPolicy));
+	if (receiveData.Ptr != nullptr)
+	{
+		auto index = MyoIndexForMyo(receiveData.Ptr, myos);
+		if (index == -1)
+		{
+			receiveData.Ptr = nullptr;
+			receiveData.IsLockOrder = false;
+			receiveData.LockingPolicy = -1;
+			receiveData.StreamEmgType = -1;
+			receiveData.UnlockType = -1;
+			receiveData.Vibration = -1;
+			return;
+		}
+		if (receiveData.IsLockOrder)
+			myos[index]->lock();
+		if (receiveData.StreamEmgType != -1)
+			myos[index]->setStreamEmg(static_cast<myo::Myo::StreamEmgType>(receiveData.StreamEmgType));
+		if (receiveData.UnlockType != -1)
+			myos[index]->unlock(static_cast<myo::Myo::UnlockType>(receiveData.UnlockType));
+		if (receiveData.Vibration != -1)
+			myos[index]->vibrate(static_cast<myo::Myo::VibrationType>(receiveData.Vibration));
+	}
+	receiveData.Ptr = nullptr;
+	receiveData.IsLockOrder = false;
+	receiveData.LockingPolicy = -1;
+	receiveData.StreamEmgType = -1;
+	receiveData.UnlockType = -1;
+	receiveData.Vibration = -1;
 }
 
 void DataTransceiver::SendMessageTo(std::shared_ptr<std::mutex>& mutex, InputInformation& data, bool& isFinish)
@@ -116,22 +150,32 @@ void DataTransceiver::SendMessageTo(std::shared_ptr<std::mutex>& mutex, InputInf
 	mutex->unlock();
 }
 
-void DataTransceiver::ReceiveMessageFrom(std::shared_ptr<std::mutex>& mutex, std::array<char, 256>& data, bool& isFinish)
+void DataTransceiver::ReceiveMessageFrom(std::shared_ptr<std::mutex>& mutex, OutputInformation& data, bool& isFinish)
 {
 	const auto fileMapName = "MyoReceiveData";
-	char* pString = nullptr;
+	auto size = sizeof(OutputInformation);
+	auto isConnect = false;
+	OutputInformation* pData = nullptr;
 	HANDLE handleFileMemory = nullptr;
 
 	while (!isFinish)
 	{
 		handleFileMemory = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, fileMapName);
-		pString = static_cast<char*>(MapViewOfFile(handleFileMemory, FILE_MAP_ALL_ACCESS, 0, 0, 0));
-		if (pString == nullptr)
+		pData = static_cast<OutputInformation*>(MapViewOfFile(handleFileMemory, FILE_MAP_ALL_ACCESS, 0, 0, 0));
+		if (pData == nullptr)
+		{
+			isConnect = false;
 			continue;
-		mutex->lock();
-		std::cout << LogString << "Unreal Engine からデータを受信しました。" << std::endl;
-		mutex->unlock();
-		if (UnmapViewOfFile(pString) == 0)
+		}
+		if (!isConnect)
+		{
+			mutex->lock();
+			std::cout << LogString << "Unreal Engine からデータを受信しました。" << std::endl;
+			mutex->unlock();
+			isConnect = true;
+		}
+		memcpy_s(&data, size, pData, size);
+		if (UnmapViewOfFile(pData) == 0)
 		{
 			mutex->lock();
 			std::cout << LogString << ErrorString << "アンマッピングに失敗しました。" << std::endl;
@@ -139,7 +183,7 @@ void DataTransceiver::ReceiveMessageFrom(std::shared_ptr<std::mutex>& mutex, std
 		}
 		CloseHandle(handleFileMemory);
 		handleFileMemory = nullptr;
-		pString = nullptr;
+		pData = nullptr;
 	}
 	if (handleFileMemory != nullptr)
 	{
@@ -149,4 +193,14 @@ void DataTransceiver::ReceiveMessageFrom(std::shared_ptr<std::mutex>& mutex, std
 	mutex->lock();
 	std::cout << LogString << "MyoReceiveDataの受信を終了します。" << std::endl;
 	mutex->unlock();
+}
+
+int DataTransceiver::MyoIndexForMyo(void* myoPtr, std::vector<myo::Myo*>& myos)
+{
+	for (auto i = 0; i < myos.size(); i++)
+	{
+		if (myos[i] == myoPtr)
+			return i;
+	}
+	return -1;
 }

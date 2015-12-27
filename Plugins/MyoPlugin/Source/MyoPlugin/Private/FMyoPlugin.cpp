@@ -52,8 +52,7 @@ void FMyoPlugin::StartupModule()
 
 void FMyoPlugin::ShutdownModule()
 {
-	collector->MyoDelegate = nullptr;
-	//collector->ShutDown();
+
 }
 
 void FMyoPlugin::SetDelegate(IMyoDelegate* newDelegate)
@@ -83,7 +82,10 @@ void FMyoPlugin::MyoTick(float DeltaTime)
 
 void FMyoPlugin::VibrateDevice(int32 deviceId, MyoVibrationType vibrationType)
 {
-
+	if (!this->IsValidDeviceId(deviceId))
+		return;
+	auto myoId = collector->KnownMyos[deviceId - 1];
+	collector->VibrateDevice(myoId, vibrationType);
 }
 
 FMyoDeviceData* FMyoPlugin::LatestData(int32 deviceId)
@@ -166,22 +168,33 @@ void FMyoPlugin::CalibrateOrientation(int32 deviceId, FRotator direction)
 
 void FMyoPlugin::SetLockingPolicy(MyoLockingPolicy policy)
 {
-
+	collector->ResetHub();
+	UE_LOG(MyoPluginLog, Log, TEXT("Set Policy to %d"), static_cast<int32>(policy));
+	collector->SetLockingPolicy(policy);
 }
 
 void FMyoPlugin::UnlockMyo(int32 deviceId, MyoUnlockType type)
 {
-
+	if (!this->IsValidDeviceId(deviceId))
+		return;
+	auto myoId = collector->KnownMyos[deviceId - 1];
+	collector->UnlockMyo(myoId, type);
 }
 
 void FMyoPlugin::LockMyo(int32 deviceId)
 {
-
+	if (!this->IsValidDeviceId(deviceId))
+		return;
+	auto myoId = collector->KnownMyos[deviceId - 1];
+	collector->LockMyo(myoId);
 }
 
 void FMyoPlugin::SetStreamEmg(int32 deviceId, MyoStreamEmgType type)
 {
-
+	if (!this->IsValidDeviceId(deviceId))
+		return;
+	auto myoId = collector->KnownMyos[deviceId - 1];
+	collector->SetStreamEmg(myoId, type);
 }
 
 FRotator FMyoPlugin::CombineRotators(FRotator a, FRotator b)
