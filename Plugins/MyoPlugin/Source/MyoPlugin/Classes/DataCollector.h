@@ -4,6 +4,36 @@
 #include "HAL/ThreadingBase.h"
 #include "DataCollector.generated.h"
 
+struct InputInformation
+{
+	void* Ptr;
+	float RotationX;
+	float RotationY;
+	float RotationZ;
+	float RotationW;
+	float AccelerationX;
+	float AccelerationY;
+	float AccelerationZ;
+	float GyroX;
+	float GyroY;
+	float GyroZ;
+	char Emg0;
+	char Emg1;
+	char Emg2;
+	char Emg3;
+	char Emg4;
+	char Emg5;
+	char Emg6;
+	char Emg7;
+	char Pose;
+	char WhichArm;
+	char ArmDirection;
+	bool OnPair;
+	bool OnConnect;
+	bool OnArmSync;
+	bool OnLock;
+};
+
 class SendDataWorker : public FRunnable
 {
 public:
@@ -23,13 +53,13 @@ class ReceiveDataWorker : public FRunnable
 {
 public:
 
-	ReceiveDataWorker(FCriticalSection& mutex, TArray<uint8>& receiveData);
+	ReceiveDataWorker(FCriticalSection& mutex, InputInformation& receiveData);
 	virtual uint32 Run() override;
 	virtual void Stop() override;
 
 private:
 	FThreadSafeCounter stopTaskCounter;
-	TArray<uint8>* receiveData;
+	InputInformation* receiveData;
 	FCriticalSection* mutex;
 };
 
@@ -70,7 +100,7 @@ public:
 	void PressPose(MyoPose pose);
 	void ReleasePose(MyoPose pose);
 	void Tick(float deltaTime);
-	void ConvertData(FCriticalSection& mutex, uint8* data, uint64& id, FQuat& rot, FVector& accel, FVector& gyro, TArray<int8>& emg,
+	void ConvertData(FCriticalSection& mutex, InputInformation& data, uint64& id, FQuat& rot, FVector& accel, FVector& gyro, TArray<int8>& emg,
 		MyoPose& pose, MyoArm& arm, MyoArmDirection& direction, bool& pair, bool& connect, bool& armSync, bool& lock);
 	void OnConnect(uint64 myoId);
 	void OnDisconnect(uint64 myoId);
@@ -100,7 +130,7 @@ public:
 
 private:
 	TArray<uint8> sendData;
-	TArray<uint8> receiveData;
+	InputInformation receiveData;
 	FCriticalSection mutex;
 
 	FRunnableThread* sendThread = nullptr;

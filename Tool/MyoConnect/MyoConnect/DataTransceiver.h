@@ -11,6 +11,36 @@ namespace std
 	class thread;
 }
 
+struct InputInformation
+{
+	void* Ptr;
+	float RotationX;
+	float RotationY;
+	float RotationZ;
+	float RotationW;
+	float AccelerationX;
+	float AccelerationY;
+	float AccelerationZ;
+	float GyroX;
+	float GyroY;
+	float GyroZ;
+	char Emg0;
+	char Emg1;
+	char Emg2;
+	char Emg3;
+	char Emg4;
+	char Emg5;
+	char Emg6;
+	char Emg7;
+	char Pose;
+	char WhichArm;
+	char ArmDirection;
+	bool OnPair;
+	bool OnConnect;
+	bool OnArmSync;
+	bool OnLock;
+};
+
 class DataTransceiver
 {
 public:
@@ -27,14 +57,14 @@ private:
 	std::shared_ptr<std::thread> sendThread;
 	std::shared_ptr<std::thread> receiveThread;
 	std::shared_ptr<std::mutex> mutex;
-	std::array<char, 58> sendData;
+	InputInformation sendData;
 	std::array<char, 256> receiveData;
 	bool isFinish = false;
 
 	static const std::string LogString;
 	static const std::string ErrorString;
 
-	static void SendMessageTo(std::shared_ptr<std::mutex>& mutex, std::array<char, 58>& data, bool& isFinish);
+	static void SendMessageTo(std::shared_ptr<std::mutex>& mutex, InputInformation& data, bool& isFinish);
 	static void ReceiveMessageFrom(std::shared_ptr<std::mutex>& mutex,std::array<char, 256>& data, bool& isFinish);
 };
 

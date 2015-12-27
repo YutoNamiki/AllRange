@@ -10,6 +10,7 @@
 	"Description" : "This is the plugin to be able to controll Myo Armband",
 	"Category" : "InputDevices",
   "EnabledByDefault": true,
+  "CanContainContent":  true,
 	
 	"Modules" :
 	[
