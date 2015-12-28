@@ -50,6 +50,7 @@ Settings.settings
 !Content/*
 !Resource/*
 !Source/*
+!WindowsNoEditor/*
 
 !Plugins/*/Resource/*
 !Plugins/*/Source/*
