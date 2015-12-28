@@ -58,3 +58,8 @@ void UMyoComponent::ConvertToMyoOrientationSpace(FRotator orientation, FRotator&
 {
 	MyoConvertToMyoOrientationSpace(orientation, converted);
 }
+
+void UMyoComponent::VibrateDevice(int32 playerIndex, MyoVibrationType type)
+{
+	MyoVibrateDevice(playerIndex, type);
+}

@@ -31,7 +31,6 @@ uint32 SendDataWorker::Run()
 	OutputInformation* pData = nullptr;
 	HANDLE handleFileMemory = nullptr;
 
-	handleFileMemory = CreateFileMappingA(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, static_cast<unsigned long>(size), fileMapName);
 	while (stopTaskCounter.GetValue() == 0)
 	{
 		if (sendData->Num() <= 0)

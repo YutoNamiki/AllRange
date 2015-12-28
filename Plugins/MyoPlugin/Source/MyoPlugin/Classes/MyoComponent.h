@@ -26,4 +26,6 @@ public:
 	UMyoController* PrimaryMyo();
 	UFUNCTION(BlueprintCallable, Category = MyoUtilityFunctions)
 	void ConvertToMyoOrientationSpace(FRotator orientation, FRotator& converted);
+	UFUNCTION(BlueprintCallable, Category = MyoUtilityFunctions)
+	void VibrateDevice(int32 playerIndex, MyoVibrationType type);
 };

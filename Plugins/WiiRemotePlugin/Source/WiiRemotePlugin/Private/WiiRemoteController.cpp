@@ -3,6 +3,31 @@
 
 UWiiRemoteController::UWiiRemoteController(const FObjectInitializer& init) : Super(init) { }
 
+void UWiiRemoteController::SetLED(int32 playerIndex, WiiRemoteLED ledBits)
+{
+	wiiRemoteDelegate->SetLED(playerIndex, ledBits);
+}
+
+void UWiiRemoteController::SetVibrate(int32 playerIndex, bool on)
+{
+	wiiRemoteDelegate->SetRumble(playerIndex, on);
+}
+
+void UWiiRemoteController::SetVibrateForAsync(int32 playerIndex, int32 milliseconds)
+{
+	wiiRemoteDelegate->SetRumbleForAsync(playerIndex, milliseconds);
+}
+
+void UWiiRemoteController::EnableSpeaker(int32 playerIndex, bool on)
+{
+	wiiRemoteDelegate->EnableSpeaker(playerIndex, on);
+}
+
+void UWiiRemoteController::PlaySquareWave(int32 playerIndex, WiiRemoteSpeakerFrequency frequancy, int32 volume)
+{
+	wiiRemoteDelegate->PlaySquareWave(playerIndex, frequancy, volume);
+}
+
 void UWiiRemoteController::SetFromWiiRemoteDevciceData(FWiiRemoteDeviceData* data)
 {
 	this->BatteryPercent = data->BatteryPercent;

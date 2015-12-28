@@ -61,6 +61,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "WiiRemote Frame")
 	int32 WiiRemoteID = 0;
 
+	UFUNCTION(BlueprintCallable, Category = "WiiRemote Frame")
+	void SetLED(int32 playerIndex, WiiRemoteLED ledBits);
+	UFUNCTION(BlueprintCallable, Category = "WiiRemote Frame")
+	void SetVibrate(int32 playerIndex, bool on);
+	UFUNCTION(BlueprintCallable, Category = "WiiRemote Frame")
+	void SetVibrateForAsync(int32 playerIndex, int32 milliseconds);
+	UFUNCTION(BlueprintCallable, Category = "WiiRemote Frame")
+	void EnableSpeaker(int32 playerIndex, bool on);
+	UFUNCTION(BlueprintCallable, Category = "WiiRemote Frame")
+	void PlaySquareWave(int32 playerIndex, WiiRemoteSpeakerFrequency frequancy, int32 volume);
+
 	void SetFromWiiRemoteDevciceData(FWiiRemoteDeviceData* data);
 
 private:

@@ -30,3 +30,28 @@ void UWiiRemoteComponent::TickComponent(float deltaTime, ELevelTick tickType, FA
 	Super::TickComponent(deltaTime, tickType, thisTickFunction);
 	IWiiRemoteDelegateBlueprint::Tick(deltaTime);
 }
+
+void UWiiRemoteComponent::SetLED(int32 playerIndex, WiiRemoteLED ledBits)
+{
+	IWiiRemoteDelegate::SetLED(playerIndex, ledBits);
+}
+
+void UWiiRemoteComponent::SetVibrate(int32 playerIndex, bool on)
+{
+	IWiiRemoteDelegate::SetRumble(playerIndex, on);
+}
+
+void UWiiRemoteComponent::SetVibrateForAsync(int32 playerIndex, int32 milliseconds)
+{
+	IWiiRemoteDelegate::SetRumbleForAsync(playerIndex, milliseconds);
+}
+
+void UWiiRemoteComponent::EnableSpeaker(int32 playerIndex, bool on)
+{
+	IWiiRemoteDelegate::EnableSpeaker(playerIndex, on);
+}
+
+void UWiiRemoteComponent::PlaySquareWave(int32 playerIndex, WiiRemoteSpeakerFrequency frequancy, int32 volume)
+{
+	IWiiRemoteDelegate::PlaySquareWave(playerIndex, frequancy, volume);
+}
