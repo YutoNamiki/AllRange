@@ -80,14 +80,14 @@ void AAllRangeCharacter::SetupPlayerInputComponent(class UInputComponent* InputC
 void AAllRangeCharacter::OnFire()
 { 
 	// try and fire a projectile
-	if (ProjectileClass != NULL)
+	if (ProjectileClass != nullptr)
 	{
 		const FRotator SpawnRotation = GetControlRotation();
 		// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
 		const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(GunOffset);
 
 		UWorld* const World = GetWorld();
-		if (World != NULL)
+		if (World != nullptr)
 		{
 			// spawn the projectile at the muzzle
 			World->SpawnActor<AAllRangeProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
@@ -95,7 +95,7 @@ void AAllRangeCharacter::OnFire()
 	}
 
 	// try and play the sound if specified
-	if (FireSound != NULL)
+	if (FireSound != nullptr)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 	}
