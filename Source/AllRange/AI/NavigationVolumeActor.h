@@ -52,18 +52,33 @@ struct FWaypointPath
 
 };
 
-class CreateOctreeWorker : FRunnable
+class CreateOctreeWorker : public FRunnable
 {
 public:
-	CreateOctreeWorker(FCriticalSection& mutex, TArray<TArray<FWaypoint>>& data, int32 recursionIndex);
+	CreateOctreeWorker(FCriticalSection* mutex, UWorld* world, TArray<TArray<FWaypoint>>& data, int32 recursionIndex, int32 index);
 	virtual uint32 Run() override;
-	virtual void Stop() override;
 
 private:
-	FThreadSafeCounter stopTaskCounter;
 	FCriticalSection* mutex;
+	UWorld* world;
 	TArray<TArray<FWaypoint>>* waypointData;
 	int32 recursionIndex;
+	int32 index;
+
+};
+
+class CreatePathWorker : public FRunnable
+{
+public:
+	CreatePathWorker(FWaypoint* waypoint, TArray<FWaypoint>* waypointList);
+	virtual uint32 Run() override;
+
+private:
+	TArray<FWaypoint>* waypointList;
+	FWaypoint* waypoint;
+
+	static bool IsIntersect(FVector min1, FVector max1, FVector min2, FVector max2);
+
 };
 
 UCLASS()
@@ -98,12 +113,13 @@ public:
 	virtual void Tick( float DeltaSeconds ) override;
 
 private:
+	FCriticalSection mutex;
 
 	void Initialize();
 
 	static void DivideVolume(UBoxComponent* volume, int32 divX, int32 divY, int32 divZ, TArray<FWaypoint>& createData);
 	static void DestroyChildrenComponents(USceneComponent* component);
-	static FWaypoint CreateWaypoint(FVector minLocation, FVector maxLocation, int32 ID);
-	static void CreateOctree(int32 recursionIndex, TArray<FWaypoint>& createData);
+	static FWaypoint CreateWaypoint(FVector minLocation, FVector maxLocation);
+	static void CreateOctree(FCriticalSection* mutex, UWorld* world, int32 recursionIndex, TArray<TArray<FWaypoint>>& createData);
 
 };

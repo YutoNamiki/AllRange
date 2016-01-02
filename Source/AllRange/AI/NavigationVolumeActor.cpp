@@ -37,7 +37,20 @@ void ANavigationVolumeActor::Initialize()
 	TArray<TArray<FWaypoint>> createWaypointData;
 	createWaypointData.Init(TArray<FWaypoint>(), Recursion + 1);
 	DivideVolume(BoxVolume, DivideX, DivideY, DivideZ, createWaypointData[0]);
+	for (auto recursionIndex = 0; recursionIndex < Recursion; recursionIndex++)
+		CreateOctree(&mutex, GetWorld(), recursionIndex, createWaypointData);
+	for (auto recursionIndex = 0; recursionIndex < Recursion; recursionIndex++)
+	{
+		const auto num = createWaypointData[recursionIndex].Num();
+		for (auto index = 0; index < num; index++)
+		{
+			WaypointList.Add(createWaypointData[recursionIndex][index]);
+			WaypointList.Last().ID = WaypointList.Num() - 1;
+		}
+	}
 
+	WaypointCount = WaypointList.Num();
+	WaypointPathCount = WaypointPathList.Num();
 }
 
 void ANavigationVolumeActor::DivideVolume(UBoxComponent* volume, int32 divX, int32 divY, int32 divZ, TArray<FWaypoint>& createData)
@@ -46,7 +59,6 @@ void ANavigationVolumeActor::DivideVolume(UBoxComponent* volume, int32 divX, int
 	const auto minPosition = volume->GetUnscaledBoxExtent() * -1.0f;
 	const auto divideScale = FVector(static_cast<float>(divX), static_cast<float>(divY), static_cast<float>(divZ));
 	const auto deltaVector = (maxPosition - minPosition) / divideScale;
-	auto num = 0;
 
 	for (auto x = minPosition.X; x < maxPosition.X; x += deltaVector.X)
 	{
@@ -56,7 +68,7 @@ void ANavigationVolumeActor::DivideVolume(UBoxComponent* volume, int32 divX, int
 			{
 				const auto min = FVector(x, y, z);
 				const auto max = min + deltaVector;
-				createData.Add(CreateWaypoint(min, max, num++));
+				createData.Add(CreateWaypoint(min, max));
 			}
 		}
 	}
@@ -76,30 +88,107 @@ void ANavigationVolumeActor::DestroyChildrenComponents(USceneComponent * compone
 	}
 }
 
-FWaypoint ANavigationVolumeActor::CreateWaypoint(FVector minLocation, FVector maxLocation, int32 ID)
+FWaypoint ANavigationVolumeActor::CreateWaypoint(FVector minLocation, FVector maxLocation)
 {
-	return FWaypoint{ ID, EWaypointState::None, 0.0f, TArray<int32>(), -1, minLocation, maxLocation };
+	return FWaypoint{ -1, EWaypointState::None, 0.0f, TArray<int32>(), -1, minLocation, maxLocation };
 }
 
-void ANavigationVolumeActor::CreateOctree(int32 recursionIndex, TArray<FWaypoint>& createData)
+void ANavigationVolumeActor::CreateOctree(FCriticalSection* mutex, UWorld* world, int32 recursionIndex, TArray<TArray<FWaypoint>>& createData)
 {
-
+	static auto number = 0;
+	const auto num = createData[recursionIndex].Num();
+	TArray<FRunnableThread*> threads;
+	TArray<CreateOctreeWorker*> workers;
+	for (auto i = 0; i < num; i++)
+	{
+		const auto threadName = FString("CreateOctreeWorkerThread_") + FString::FromInt(number++);
+		workers.Add(new CreateOctreeWorker(mutex, world, createData, recursionIndex, i));
+		threads.Add(FRunnableThread::Create(workers[i], *threadName));
+	}
+	for (auto i = 0; i < num; i++)
+	{
+		threads[i]->WaitForCompletion();
+		threads[i]->Kill();
+		delete workers[i];
+		delete threads[i];
+	}
 }
 
-CreateOctreeWorker::CreateOctreeWorker(FCriticalSection& mutex, TArray<TArray<FWaypoint>>& data, int32 recursionIndex)
+CreateOctreeWorker::CreateOctreeWorker(FCriticalSection* mutex, UWorld* world, TArray<TArray<FWaypoint>>& data, int32 recursionIndex, int32 index)
 {
-	this->mutex = &mutex;
+	this->mutex = mutex;
+	this->world = world;
 	waypointData = &data;
 	this->recursionIndex = recursionIndex;
+	this->index = index;
 }
 
 uint32 CreateOctreeWorker::Run()
 {
+	auto waypoint = (*waypointData)[recursionIndex][index];
+	auto min = waypoint.MinimumLocation;
+	auto max = waypoint.MaximumLocation;
+	auto position = (max + min) * 0.5f;
+	auto extent = (max - min) * 0.5f;
+	if (!world->OverlapAnyTestByChannel(position, FQuat(), ECollisionChannel::ECC_WorldStatic, FCollisionShape::MakeBox(extent)))
+		return 0;
+	FVector minLocations[8];
+	FVector maxLocations[8];
+	minLocations[0] = FVector(min.X, min.Y, min.Z);
+	minLocations[1] = FVector(position.X, min.Y, min.Z);
+	minLocations[2] = FVector(min.X, min.Y, position.Z);
+	minLocations[3] = FVector(position.X, min.Y, position.Z);
+	minLocations[4] = FVector(min.X, position.Y, min.Z);
+	minLocations[5] = FVector(position.X, position.Y, min.Z);
+	minLocations[6] = FVector(min.X, position.Y, position.Z);
+	minLocations[7] = FVector(position.X, position.Y, position.Z);
+	maxLocations[0] = FVector(position.X, position.Y, position.Z);
+	maxLocations[1] = FVector(max.X, position.Y, position.Z);
+	maxLocations[2] = FVector(position.X, position.Y, max.Z);
+	maxLocations[3] = FVector(max.X, position.Y, max.Z);
+	maxLocations[4] = FVector(position.X, max.Y, position.Z);
+	maxLocations[5] = FVector(max.X, max.Y, position.Z);
+	maxLocations[6] = FVector(position.X, max.Y, max.Z);
+	maxLocations[7] = FVector(max.X, max.Y, max.Z);
+	{
+		FScopeLock lock(mutex);
+		for (auto i = 0; i < 8; i++)
+			(*waypointData)[recursionIndex + 1].Add(FWaypoint{ -1, EWaypointState::None, 0.0f, TArray<int32>(), -1, minLocations[i], maxLocations[i] });
+	}
 
 	return 0;
 }
 
-void CreateOctreeWorker::Stop()
+CreatePathWorker::CreatePathWorker(FWaypoint* waypoint, TArray<FWaypoint>* waypointList)
 {
-	stopTaskCounter.Increment();
+	this->waypoint = waypoint;
+	this->waypointList = waypointList;
+}
+
+uint32 CreatePathWorker::Run()
+{
+	const auto num = waypointList->Num();
+	const auto oneVector = FVector(1.0f, 1.0f, 1.0f);
+	for (auto i = 0; i < num; i++)
+	{
+		const auto& other = (*waypointList)[i];
+		if (IsIntersect(waypoint->MinimumLocation - oneVector, waypoint->MaximumLocation + oneVector,
+			other.MinimumLocation - oneVector, other.MaximumLocation + oneVector))
+		{
+			waypoint->NeighborWaypointIDs.Add(other.ID);
+		}
+	}
+
+	return 0;
+}
+
+bool CreatePathWorker::IsIntersect(FVector min1, FVector max1, FVector min2, FVector max2)
+{
+	if (min1.X > max2.X || min2.X > max1.X)
+		return false;
+	if (min1.Y > max2.Y || min2.Y > min1.Y)
+		return false;
+	if (min1.Z > max2.Z || min2.Z > min1.Z)
+		return false;
+	return true;
 }
