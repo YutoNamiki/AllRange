@@ -1,0 +1,30 @@
+モーションは６０ｆｐｓで書き出しています。
+何か不都合やミスがあったらお気軽に！
+
+player_T_pose　　　　Tポーズです
+player_wait1　 　　　弓を構えない状態での待機です
+
+player_damege　　　　ダメージモーションです
+player_walk　　　　　プレイヤーがその場で回る時の動きです
+
+player_set_up　　　　正面に弓を構えます
+player_attack1　　　 正面に弓を引きます
+player_wait2　　　　 正面に弓を引いた状態での待機です
+player_attack2　　　 正面に弓を放ちます
+
+player_set_up_top　　上に弓を構えます
+player_attack_top1　 上に弓を引きます
+player_wait_top　　　上に弓を引いた状態での待機です
+player_attack_top2　 上に弓を放ちます
+
+player_set_up_down   下に弓を構えます
+player_attack_down1  下に弓を引きます
+player_wait_down　　 下に弓を引いた状態での待機です
+player_attack_down2  下に弓を放ちます
+
+player_wait_down2　　下に弓を構えた状態での待機です
+player_set_up_top2　 上に弓を構えた状態での待機です
+
+
+
+toroko_m              トロッコです
