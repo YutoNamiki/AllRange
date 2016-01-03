@@ -1,14 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "AllRange.h"
 #include "NavigationVolumeActor.h"
 #include "DrawDebugHelpers.h"
 #include "PathFindingComponent.h"
 
-// Sets default values
 ANavigationVolumeActor::ANavigationVolumeActor()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
 	BoxVolume = CreateDefaultSubobject<UBoxComponent>(FName("Volume"));
@@ -17,7 +13,6 @@ ANavigationVolumeActor::ANavigationVolumeActor()
 	PathFinder->WaypointList = &WaypointList;
 }
 
-// Called when the game starts or when spawned
 void ANavigationVolumeActor::BeginPlay()
 {
 	Super::BeginPlay();
@@ -61,7 +56,6 @@ void ANavigationVolumeActor::EditorApplyTranslation(const FVector& DeltaTranslat
 	{
 		Bake = false;
 		Initialize();
-		
 	}
 }
 
