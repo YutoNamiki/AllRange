@@ -3,6 +3,7 @@
 #include "AllRange.h"
 #include "NavigationVolumeActor.h"
 #include "DrawDebugHelpers.h"
+#include "PathFindingComponent.h"
 
 // Sets default values
 ANavigationVolumeActor::ANavigationVolumeActor()
@@ -12,6 +13,8 @@ ANavigationVolumeActor::ANavigationVolumeActor()
 
 	BoxVolume = CreateDefaultSubobject<UBoxComponent>(FName("Volume"));
 	RootComponent = BoxVolume;
+	PathFinder = CreateDefaultSubobject<UPathFindingComponent>(FName("PathFindingComponent"));
+
 }
 
 // Called when the game starts or when spawned
@@ -76,6 +79,7 @@ void ANavigationVolumeActor::Initialize()
 	CreatePath(&mutex, WaypointList, createPathData);
 	CheckOverlapPaths(&mutex, createPathData);
 	SetWaypointPathList(WaypointPathList, createPathData);
+	PathFinder->WaypointList = &WaypointList;
 	WaypointCount = WaypointList.Num();
 	WaypointPathCount = WaypointPathList.Num();
 }
@@ -187,11 +191,11 @@ void ANavigationVolumeActor::CheckOverlapPaths(FCriticalSection* mutex, TArray<F
 	static auto number = 0;
 	const auto& num = waypointPathData.Num();
 	TArray<FRunnableThread*> threads;
-	TArray<CheckOverlapPath*> workers;
+	TArray<CheckOverlapPathWorker*> workers;
 	for (auto i = 0; i < num; i++)
 	{
 		const auto threadName = FString("CheckOverlapPathsThread_") + FString::FromInt(number++);
-		workers.Add(new CheckOverlapPath(mutex, waypointPathData[i], &waypointPathData));
+		workers.Add(new CheckOverlapPathWorker(mutex, waypointPathData[i], &waypointPathData));
 		threads.Add(FRunnableThread::Create(workers[i], *threadName));
 	}
 	for (auto i = 0; i < num; i++)
@@ -301,14 +305,14 @@ bool CreatePathWorker::IsIntersect(FVector min1, FVector max1, FVector min2, FVe
 	return true;
 }
 
-CheckOverlapPath::CheckOverlapPath(FCriticalSection* mutex, FWaypointPath& path, TArray<FWaypointPath>* waypointPathList)
+CheckOverlapPathWorker::CheckOverlapPathWorker(FCriticalSection* mutex, FWaypointPath& path, TArray<FWaypointPath>* waypointPathList)
 {
 	this->mutex = mutex;
 	this->path = &path;
 	this->waypointPathList = waypointPathList;
 }
 
-uint32 CheckOverlapPath::Run()
+uint32 CheckOverlapPathWorker::Run()
 {
 	auto num = waypointPathList->Num();
 	for (auto i = 0; i < num; i++)

@@ -6,6 +6,8 @@
 #include "HAL/ThreadingBase.h"
 #include "NavigationVolumeActor.generated.h"
 
+class UPathFindingComponent;
+
 UENUM(BlueprintType)
 enum class EWaypointState : uint8
 {
@@ -84,10 +86,10 @@ private:
 
 };
 
-class CheckOverlapPath : public FRunnable
+class CheckOverlapPathWorker : public FRunnable
 {
 public:
-	CheckOverlapPath(FCriticalSection* mutex, FWaypointPath& path, TArray<FWaypointPath>* waypointPathList);
+	CheckOverlapPathWorker(FCriticalSection* mutex, FWaypointPath& path, TArray<FWaypointPath>* waypointPathList);
 	virtual uint32 Run() override;
 
 private:
@@ -104,6 +106,8 @@ class ALLRANGE_API ANavigationVolumeActor : public AActor
 public:	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "NavigationVolume")
 	UBoxComponent* BoxVolume;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PathFinding")
+	UPathFindingComponent* PathFinder;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Waypoint")
 	TArray<FWaypoint> WaypointList;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Waypoint")
