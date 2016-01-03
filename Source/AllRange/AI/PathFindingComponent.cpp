@@ -172,15 +172,15 @@ bool PathFindingWorker::FindPathByAStar(FCriticalSection* mutex, TArray<FWaypoin
 int32 PathFindingWorker::GetMinCostNodeID(TArray<FWaypoint>* waypointList, TArray<int32>& idArray)
 {
 	const auto num = idArray.Num();
-	auto cost = (*waypointList)[0].Cost;
-	auto id = 0;
+	auto cost = (*waypointList)[idArray[0]].Cost;
+	auto id = (*waypointList)[idArray[0]].ID;
 	for (auto index = 0; index < num; index++)
 	{
-		const auto currentCost = (*waypointList)[index].Cost;
+		const auto currentCost = (*waypointList)[idArray[index]].Cost;
 		if (currentCost < cost)
 		{
 			cost = currentCost;
-			id = index;
+			id = (*waypointList)[idArray[index]].ID;
 		}
 	}
 	return id;

@@ -13,7 +13,7 @@ enum class EPathFindingResult : uint8
 {
 	Failed		UMETA(DisplayName = "Failed"),
 	Thinking	UMETA(DisplayName = "Thinking"),
-	Success		UMETA(DisplayName = "Failed")
+	Success		UMETA(DisplayName = "Success")
 };
 
 USTRUCT(BlueprintType)

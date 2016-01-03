@@ -14,7 +14,7 @@ ANavigationVolumeActor::ANavigationVolumeActor()
 	BoxVolume = CreateDefaultSubobject<UBoxComponent>(FName("Volume"));
 	RootComponent = BoxVolume;
 	PathFinder = CreateDefaultSubobject<UPathFindingComponent>(FName("PathFindingComponent"));
-
+	PathFinder->WaypointList = &WaypointList;
 }
 
 // Called when the game starts or when spawned
