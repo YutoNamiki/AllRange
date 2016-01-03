@@ -61,6 +61,7 @@ void ANavigationVolumeActor::EditorApplyTranslation(const FVector& DeltaTranslat
 	{
 		Bake = false;
 		Initialize();
+		
 	}
 }
 
@@ -82,6 +83,8 @@ void ANavigationVolumeActor::Initialize()
 	PathFinder->WaypointList = &WaypointList;
 	WaypointCount = WaypointList.Num();
 	WaypointPathCount = WaypointPathList.Num();
+	if (!IsDebugDrawPaths)
+		WaypointPathList.Empty();
 }
 
 void ANavigationVolumeActor::DivideVolume(UBoxComponent* volume, int32 divX, int32 divY, int32 divZ, TArray<FWaypoint>& createData)
