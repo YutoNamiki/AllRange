@@ -59,6 +59,39 @@ void ANavigationVolumeActor::EditorApplyTranslation(const FVector& DeltaTranslat
 	}
 }
 
+void ANavigationVolumeActor::AddPathFindingQue(FPathFindingData addData)
+{
+	PathFinder->OrderQue.Add(addData);
+}
+
+EPathFindingResult ANavigationVolumeActor::GetPathFindingResultRoute(APawn* orderPawn, TArray<FVector>& resultRoute)
+{
+	if (PathFinder->OrderQue.Num() == 0)
+		return EPathFindingResult::Failed;
+	const auto num = PathFinder->OrderQue.Num();
+	for (auto index = 0; index < num; index++)
+	{
+		if (PathFinder->OrderQue[index].OrderPawn == orderPawn)
+		{
+			const auto result = PathFinder->OrderQue[index].Result;
+			switch (result)
+			{
+			case EPathFindingResult::Failed:
+				PathFinder->OrderQue.RemoveAt(index);
+				return result;
+			case EPathFindingResult::Thinking:
+				return result;
+			case EPathFindingResult::Success:
+				resultRoute.Empty();
+				resultRoute = PathFinder->OrderQue[index].ResultRoute;
+				PathFinder->OrderQue.RemoveAt(index);
+				return result;
+			}
+		}
+	}
+	return EPathFindingResult::Failed;
+}
+
 void ANavigationVolumeActor::Initialize()
 {
 	WaypointList.Empty();

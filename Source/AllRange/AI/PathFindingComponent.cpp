@@ -47,29 +47,46 @@ uint32 PathFindingWorker::Run()
 {
 	while (safeCounter.GetValue() == 0)
 	{
-		if (que->Num() == 0)
-			continue;
-		auto& order = (*que)[0];
+		FPathFindingData order;
+		{
+			FScopeLock lock(mutex);
+			if (que->Num() == 0)
+				continue;
+			if (&(*que)[0] == nullptr)
+				continue;
+			order = (*que)[0];
+		}
 		if (order.Result != EPathFindingResult::Thinking)
 			continue;
-		if (LineTracingStartAndEnd(mutex, world, order))
+		if (LineTracingStartAndEnd(world, order))
+		{
+			FScopeLock lock(mutex);
+			(*que)[0] = order;
 			continue;
+		}
 		pathInfo.StartLocation = order.StartLocation;
 		pathInfo.EndLocation = order.TargetLocation;
 		pathInfo.StartNode = GetNearestNode(waypointList, pathInfo.StartLocation);
 		pathInfo.EndNode = GetNearestNode(waypointList, pathInfo.EndLocation);
-		if (LoadFromDataMap(mutex, pathInfo.RouteData, pathInfo.StartNode, pathInfo.EndNode, order))
+		if (LoadFromDataMap(pathInfo.RouteData, pathInfo.StartNode, pathInfo.EndNode, order))
+		{
+			FScopeLock lock(mutex);
+			(*que)[0] = order;
 			continue;
-		if (FindPathByAStar(mutex, waypointList, pathInfo, order))
+		}
+		if (FindPathByAStar(waypointList, pathInfo, order))
+		{
+			FScopeLock lock(mutex);
+			(*que)[0] = order;
 			continue;
+		}
 		pathInfo.CloseList.Empty();
 		pathInfo.OpenList.Empty();
 		pathInfo.StartNode = -1;
 		pathInfo.EndNode = -1;
-		{
-			FScopeLock lock(mutex);
-			order.Result = EPathFindingResult::Failed;
-		}
+		order.Result = EPathFindingResult::Failed;
+		FScopeLock lock(mutex);
+		(*que)[0] = order;
 	}
 	return 0;
 }
@@ -79,11 +96,10 @@ void PathFindingWorker::Stop()
 	safeCounter.Increment();
 }
 
-bool PathFindingWorker::LineTracingStartAndEnd(FCriticalSection* mutex, UWorld* world, FPathFindingData& orderData)
+bool PathFindingWorker::LineTracingStartAndEnd(UWorld* world, FPathFindingData& orderData)
 {
 	if (world->LineTraceTestByChannel(orderData.StartLocation, orderData.TargetLocation, ECollisionChannel::ECC_WorldStatic))
 		return false;
-	FScopeLock lock(mutex);
 	orderData.ResultRoute.Empty();
 	orderData.ResultRoute.Add(orderData.TargetLocation);
 	orderData.Result = EPathFindingResult::Success;
@@ -109,21 +125,20 @@ int32 PathFindingWorker::GetNearestNode(TArray<FWaypoint>* waypointList, FVector
 	return id;
 }
 
-bool PathFindingWorker::LoadFromDataMap(FCriticalSection* mutex, TMap<FString, TArray<FVector>>& data, int32 startId, int32 endId, FPathFindingData& orderData)
+bool PathFindingWorker::LoadFromDataMap(TMap<FString, TArray<FVector>>& data, int32 startId, int32 endId, FPathFindingData& orderData)
 {
 	auto keyString = FString::FromInt(startId) + FString("_") + FString::FromInt(endId);
 	if (data.Num() == 0)
 		return false;
 	if (!data.Contains(keyString))
 		return false;
-	FScopeLock lock(mutex);
 	orderData.ResultRoute.Empty();
 	orderData.ResultRoute = data[keyString];
 	orderData.Result = EPathFindingResult::Success;
 	return true;
 }
 
-bool PathFindingWorker::FindPathByAStar(FCriticalSection* mutex, TArray<FWaypoint>* waypointList, PathFindingInformation& pathInfo, FPathFindingData& orderData)
+bool PathFindingWorker::FindPathByAStar(TArray<FWaypoint>* waypointList, PathFindingInformation& pathInfo, FPathFindingData& orderData)
 {
 	const auto startNodeLocation = GetWaypointPosition((*waypointList)[pathInfo.StartNode]);
 	const auto endNodeLocation = GetWaypointPosition((*waypointList)[pathInfo.EndNode]);
@@ -139,7 +154,7 @@ bool PathFindingWorker::FindPathByAStar(FCriticalSection* mutex, TArray<FWaypoin
 		pathInfo.OpenList.Remove(currentNodeID);
 		if (currentNode.ID == pathInfo.EndNode)
 		{
-			ConvertResultPath(mutex, waypointList, pathInfo, orderData);
+			ConvertResultPath(waypointList, pathInfo, orderData);
 			return true;
 		}
 		for (auto neighborID : currentNode.NeighborWaypointIDs)
@@ -184,23 +199,17 @@ int32 PathFindingWorker::GetMinCostNodeID(TArray<FWaypoint>* waypointList, TArra
 	return id;
 }
 
-void PathFindingWorker::ConvertResultPath(FCriticalSection* mutex, TArray<FWaypoint>* waypointList, PathFindingInformation& pathInfo, FPathFindingData& orderData)
+void PathFindingWorker::ConvertResultPath(TArray<FWaypoint>* waypointList, PathFindingInformation& pathInfo, FPathFindingData& orderData)
 {
 	const auto endLocation = GetWaypointPosition((*waypointList)[pathInfo.EndNode]);
-	{
-		FScopeLock lock(mutex);
-		orderData.ResultRoute.Empty();
-		orderData.ResultRoute.Add(pathInfo.EndLocation);
-		orderData.ResultRoute.Add(endLocation);
-	}
+	orderData.ResultRoute.Empty();
+	orderData.ResultRoute.Add(pathInfo.EndLocation);
+	orderData.ResultRoute.Add(endLocation);
 	auto currentNode = pathInfo.EndNode;
 	while (currentNode != pathInfo.StartNode)
 	{
 		currentNode = (*waypointList)[currentNode].ParentWaypointID;
-		{
-			FScopeLock lock(mutex);
-			orderData.ResultRoute.Add(GetWaypointPosition((*waypointList)[currentNode]));
-		}
+		orderData.ResultRoute.Add(GetWaypointPosition((*waypointList)[currentNode]));
 	}
 	for (auto nodeID : pathInfo.OpenList)
 	{
@@ -219,7 +228,6 @@ void PathFindingWorker::ConvertResultPath(FCriticalSection* mutex, TArray<FWaypo
 	auto keyString = FString::FromInt(pathInfo.StartNode) + FString("_") + FString::FromInt(pathInfo.EndNode);
 	if (!pathInfo.RouteData.Contains(keyString))
 		pathInfo.RouteData.Add(keyString, orderData.ResultRoute);
-	FScopeLock lock(mutex);
 	orderData.Result = EPathFindingResult::Success;
 }
 

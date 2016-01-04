@@ -14,6 +14,32 @@ enum class EWaypointState : uint8
 	Closed	UMETA(DisplayName = "Closed")
 };
 
+UENUM(BlueprintType)
+enum class EPathFindingResult : uint8
+{
+	Failed		UMETA(DisplayName = "Failed"),
+	Thinking	UMETA(DisplayName = "Thinking"),
+	Success		UMETA(DisplayName = "Success")
+};
+
+USTRUCT(BlueprintType)
+struct FPathFindingData
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	APawn* OrderPawn;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector StartLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector TargetLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EPathFindingResult Result;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FVector> ResultRoute;
+
+};
+
 USTRUCT(BlueprintType)
 struct FWaypoint
 {
@@ -142,6 +168,11 @@ public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 	virtual void EditorApplyTranslation(const FVector& DeltaTranslation, bool bAltDown, bool bShiftDown, bool bCtrlDown) override;
 #endif
+
+	UFUNCTION(BlueprintCallable, Category = "PathFinding")
+	void AddPathFindingQue(FPathFindingData addData);
+	UFUNCTION(BlueprintCallable, Category = "PathFinding")
+	EPathFindingResult GetPathFindingResultRoute(APawn* orderPawn, TArray<FVector>& resultRoute);
 
 private:
 	FCriticalSection mutex;

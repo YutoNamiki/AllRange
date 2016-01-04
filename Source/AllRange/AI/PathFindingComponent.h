@@ -5,32 +5,7 @@
 #include "PathFindingComponent.generated.h"
 
 struct FWaypoint;
-
-UENUM(BlueprintType)
-enum class EPathFindingResult : uint8
-{
-	Failed		UMETA(DisplayName = "Failed"),
-	Thinking	UMETA(DisplayName = "Thinking"),
-	Success		UMETA(DisplayName = "Success")
-};
-
-USTRUCT(BlueprintType)
-struct FPathFindingData
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	APawn* OrderPawn;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector StartLocation;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector TargetLocation;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EPathFindingResult Result;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FVector> ResultRoute;
-
-};
+struct FPathFindingData;
 
 struct PathFindingInformation
 {
@@ -58,14 +33,13 @@ private:
 	TArray<FWaypoint>* waypointList;
 	TArray<FPathFindingData>* que;
 	PathFindingInformation pathInfo;
-	
 
-	static bool LineTracingStartAndEnd(FCriticalSection* mutex, UWorld* world, FPathFindingData& orderData);
+	static bool LineTracingStartAndEnd(UWorld* world, FPathFindingData& orderData);
 	static int32 GetNearestNode(TArray<FWaypoint>* waypointList, FVector location);
-	static bool LoadFromDataMap(FCriticalSection* mutex, TMap<FString, TArray<FVector>>& data, int32 startId, int32 endId, FPathFindingData& orderData);
-	static bool FindPathByAStar(FCriticalSection* mutex, TArray<FWaypoint>* waypointList, PathFindingInformation& pathInfo, FPathFindingData& orderData);
+	static bool LoadFromDataMap(TMap<FString, TArray<FVector>>& data, int32 startId, int32 endId, FPathFindingData& orderData);
+	static bool FindPathByAStar(TArray<FWaypoint>* waypointList, PathFindingInformation& pathInfo, FPathFindingData& orderData);
 	static int32 GetMinCostNodeID(TArray<FWaypoint>* waypointList, TArray<int32>& idArray);
-	static void ConvertResultPath(FCriticalSection* mutex, TArray<FWaypoint>* waypointList, PathFindingInformation& pathInfo, FPathFindingData& orderData);
+	static void ConvertResultPath(TArray<FWaypoint>* waypointList, PathFindingInformation& pathInfo, FPathFindingData& orderData);
 	static FVector GetWaypointPosition(FWaypoint waypoint);
 };
 
