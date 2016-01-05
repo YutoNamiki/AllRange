@@ -1,7 +1,10 @@
 #include "WiiRemotePluginPrivatePCH.h"
 #include "WiiRemoteController.h"
 
-UWiiRemoteController::UWiiRemoteController(const FObjectInitializer& init) : Super(init) { }
+UWiiRemoteController::UWiiRemoteController(const FObjectInitializer& init) : Super(init) 
+{
+	this->Dots.Init(FWiiRemoteDot(), 4);
+}
 
 void UWiiRemoteController::SetLED(int32 playerIndex, WiiRemoteLED ledBits)
 {
@@ -32,8 +35,8 @@ void UWiiRemoteController::SetFromWiiRemoteDevciceData(FWiiRemoteDeviceData* dat
 {
 	this->BatteryPercent = data->BatteryPercent;
 	this->Buttons = data->Buttons;
-	this->Dots.Init(FWiiRemoteDot(), 4);
-	this->Dots = data->Dots;
+	if (data->Dots.Num() > 0 && data->Dots.Num() <= 4)
+		this->Dots = data->Dots;
 	this->Acceleration = data->Acceleration;
 	this->OrientationPitch = data->OrientationPitch;
 	this->OrientationRoll = data->OrientationRoll;
