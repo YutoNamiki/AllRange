@@ -77,14 +77,14 @@ EPathFindingResult ANavigationVolumeActor::GetPathFindingResultRoute(APawn* orde
 			switch (result)
 			{
 			case EPathFindingResult::Failed:
-				PathFinder->OrderQue.RemoveAt(index);
+				PathFinder->RemoveOrderQue(index);
 				return result;
 			case EPathFindingResult::Thinking:
 				return result;
 			case EPathFindingResult::Success:
 				resultRoute.Empty();
 				resultRoute = PathFinder->OrderQue[index].ResultRoute;
-				PathFinder->OrderQue.RemoveAt(index);
+				PathFinder->RemoveOrderQue(index);
 				return result;
 			}
 		}
