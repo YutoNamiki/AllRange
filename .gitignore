@@ -40,6 +40,7 @@ Tool/*/Release/
 *.vsprops
 *.vcxproj.user
 *.snippet
+*.opendb
 Makefile
 Makefile.*
 Settings.settings
