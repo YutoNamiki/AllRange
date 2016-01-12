@@ -133,10 +133,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PathFinding")
 	UPathFindingComponent* PathFinder;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Waypoint")
-	TArray<FWaypoint> WaypointList;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Waypoint")
-	TArray<FWaypointPath> WaypointPathList;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Waypoint")
 	int32 WaypointCount = 0;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Waypoint")
 	int32 WaypointPathCount = 0;
@@ -160,6 +156,11 @@ public:
 	FColor DrawPathColor = FColor::Green;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DebugSettings")
 	float DrawPathThickness = 5.0f;
+
+	UPROPERTY()
+	TArray<FWaypoint> WaypointList;
+	UPROPERTY()
+	TArray<FWaypointPath> WaypointPathList;
 
 	ANavigationVolumeActor();
 	virtual void BeginPlay() override;
