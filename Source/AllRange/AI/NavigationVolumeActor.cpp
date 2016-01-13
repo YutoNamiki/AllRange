@@ -39,6 +39,7 @@ void ANavigationVolumeActor::BeginPlay()
 	}
 }
 
+#if WITH_EDITOR
 void ANavigationVolumeActor::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
@@ -58,6 +59,7 @@ void ANavigationVolumeActor::EditorApplyTranslation(const FVector& DeltaTranslat
 		Initialize();
 	}
 }
+#endif
 
 void ANavigationVolumeActor::AddPathFindingQue(FPathFindingData addData)
 {
