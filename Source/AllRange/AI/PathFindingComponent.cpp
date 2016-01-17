@@ -59,6 +59,7 @@ uint32 PathFindingWorker::Run()
 {
 	while (safeCounter.GetValue() == 0)
 	{
+		FPlatformProcess::Sleep(1.0f / 75.0f);
 		FPathFindingData order;
 		order.Result = EPathFindingResult::Failed;
 		{
@@ -68,11 +69,7 @@ uint32 PathFindingWorker::Run()
 			if (currentOrder->GetData() == nullptr)
 				continue;
 			if (currentOrder->Num() > 0)
-			{
-				auto orderQue = *currentOrder;
-				if (orderQue.Num() > 0)
-					order = orderQue[0];
-			}
+				order = (*currentOrder)[0];
 		}
 		if (order.Result != EPathFindingResult::Thinking)
 			continue;
