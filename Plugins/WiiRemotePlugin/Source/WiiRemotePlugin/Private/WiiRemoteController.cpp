@@ -4,6 +4,12 @@
 UWiiRemoteController::UWiiRemoteController(const FObjectInitializer& init) : Super(init) 
 {
 	this->Dots.Init(FWiiRemoteDot(), 4);
+	for (auto i = 0; i < 4; i++)
+	{
+		this->Dots[i].bVisible = false;
+		this->Dots[i].X = 0.0f;
+		this->Dots[i].Y = 0.0f;
+	}
 }
 
 void UWiiRemoteController::SetLED(int32 playerIndex, WiiRemoteLED ledBits)
@@ -35,8 +41,10 @@ void UWiiRemoteController::SetFromWiiRemoteDevciceData(FWiiRemoteDeviceData* dat
 {
 	this->BatteryPercent = data->BatteryPercent;
 	this->Buttons = data->Buttons;
-	if (data->Dots.Num() > 0 && data->Dots.Num() <= 4)
+	if (data->Dots.Num() == 4)
+	{
 		this->Dots = data->Dots;
+	}
 	this->Acceleration = data->Acceleration;
 	this->OrientationPitch = data->OrientationPitch;
 	this->OrientationRoll = data->OrientationRoll;
