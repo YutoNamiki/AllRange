@@ -43,7 +43,7 @@ void UWiiRemoteController::SetFromWiiRemoteDevciceData(FWiiRemoteDeviceData* dat
 	this->Buttons = data->Buttons;
 	if (data->Dots.Num() == 4)
 	{
-		this->Dots = data->Dots;
+		this->Dots = TArray<FWiiRemoteDot>(data->Dots);
 	}
 	this->Acceleration = data->Acceleration;
 	this->OrientationPitch = data->OrientationPitch;
