@@ -414,7 +414,8 @@ void UDataCollector::OnEmgData(uint64 myoId, TArray<int8>& emg)
 	FMyoEmgData data;
 	for (auto emgValue : emg)
 		data.Streams.Add(emgValue);
-	MyoDelegate->OnEmgData(myoIndex + 1, data);
+	if (MyoDelegate)
+		MyoDelegate->OnEmgData(myoIndex + 1, data);
 }
 
 int32 UDataCollector::IdentifyMyo(uint64 myoId)
