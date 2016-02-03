@@ -110,16 +110,19 @@ UDataCollector::UDataCollector(class FObjectInitializer const& objectInitializer
 	, Listening(false)
 	, LastPose(MyoPose::Unknown)
 {
-
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::UDataCollector"));
 }
 
 UDataCollector::~UDataCollector()
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::~UDataCollector_Begin"));
 	ShutDown();
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::~UDataCollector_End"));
 }
 
 void UDataCollector::PressPose(MyoPose pose)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::PressPose_Begin"));
 	switch (pose)
 	{
 	case MyoPose::Rest:
@@ -144,10 +147,12 @@ void UDataCollector::PressPose(MyoPose pose)
 		EmitKeyDownEventForKey(EMyoKeys::PoseUnknown, 0, 0);
 		break;
 	}
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::PressPose_End"));
 }
 
 void UDataCollector::ReleasePose(MyoPose pose)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::ReleasePose_Begin"));
 	switch (pose)
 	{
 	case MyoPose::Rest:
@@ -172,10 +177,13 @@ void UDataCollector::ReleasePose(MyoPose pose)
 		EmitKeyUpEventForKey(EMyoKeys::PoseUnknown, 0, 0);
 		break;
 	}
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::ReleasePose_End"));
 }
 
 void UDataCollector::Tick(float deltaTime)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::Tick_Begin"));
+
 	uint64 id = 0;
 	FQuat rotation = FQuat::Identity;
 	FVector acceleration = FVector::ZeroVector, gyro = FVector::ZeroVector;
@@ -189,7 +197,6 @@ void UDataCollector::Tick(float deltaTime)
 	ConvertData(mutex, receiveData, id, rotation, acceleration, gyro, emg, pose, 
 		whichArm, xDirection, onPair, onConnect, onArmSync, onLock);
 	auto index = MyoIndexForMyo(id);
-
 	if (index == -1 && onConnect)
 		OnConnect(id);
 	else if (index != -1 && !onConnect)
@@ -223,11 +230,13 @@ void UDataCollector::Tick(float deltaTime)
 				OnPose(id, pose);
 		}
 	}
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::Tick_End"));
 }
 
 void UDataCollector::ConvertData(FCriticalSection& mutex, InputInformation& data, uint64& id, FQuat& rot, FVector& accel, FVector& gyro,
 	TArray<int8>& emg, MyoPose & pose, MyoArm & arm, MyoArmDirection & direction, bool& pair, bool& connect, bool& armSync, bool& lock)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::ConvertData_Begin"));
 	FScopeLock threadLock(&mutex);
 	id = reinterpret_cast<uint64>(data.Ptr);
 	rot = FQuat(data.RotationX, data.RotationY, data.RotationZ, data.RotationW);
@@ -241,33 +250,39 @@ void UDataCollector::ConvertData(FCriticalSection& mutex, InputInformation& data
 	emg[5] = data.Emg5;
 	emg[6] = data.Emg6;
 	emg[7] = data.Emg7;
-	pose = static_cast<MyoPose>(data.Pose);
+	pose = (data.Pose == 255) ? MyoPose::Unknown : static_cast<MyoPose>(data.Pose);
 	arm = static_cast<MyoArm>(data.WhichArm);
 	direction = static_cast<MyoArmDirection>(data.ArmDirection);
 	pair = data.OnPair;
 	connect = data.OnConnect;
 	armSync = data.OnArmSync;
 	lock = data.OnLock;
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::ConvertData_End"));
 }
 
 void UDataCollector::OnConnect(uint64 myoId)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnConnect_Begin"));
 	UE_LOG(MyoPluginLog, Log, TEXT("Myo %d  has connected."), IdentifyMyo(myoId));
 	if (MyoDelegate)
 		MyoDelegate->OnConnect(IdentifyMyo(myoId));
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnConnect_End"));
 }
 
 void UDataCollector::OnDisconnect(uint64 myoId)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnDisconnect_Begin"));
 	UE_LOG(MyoPluginLog, Log, TEXT("Myo %d  has disconnected."), IdentifyMyo(myoId));
 	if (MyoDelegate)
 		MyoDelegate->OnDisconnect(IdentifyMyo(myoId));
 	if (myoId == LastPairedMyo)
 		LastPairedMyo = LastValidMyo();
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnDisconnect_End"));
 }
 
 void UDataCollector::OnArmSync(uint64 myoId, MyoArm arm, MyoArmDirection xDirection)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnArmSync_Begin"));
 	auto myoIndex = MyoIndexForMyo(myoId);
 	Data[myoIndex].Arm = arm;
 	Data[myoIndex].XDirection = xDirection;
@@ -277,11 +292,14 @@ void UDataCollector::OnArmSync(uint64 myoId, MyoArm arm, MyoArmDirection xDirect
 		RightMyo = myoIndex + 1;
 	if (MyoDelegate)
 		MyoDelegate->OnArmSync(IdentifyMyo(myoId), arm, xDirection);
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnArmSync_End"));
 }
 
 void UDataCollector::OnArmUnsync(uint64 myoId)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnArmUnsync_Begin"));
 	auto myoIndex = MyoIndexForMyo(myoId);
+	UE_LOG(MyoPluginLog, Warning, TEXT("myoIndex:%d"), myoIndex);
 	Data[myoIndex].Arm = MyoArm::Unknown;
 	Data[myoIndex].XDirection = MyoArmDirection::Unknown;
 	if (LeftMyo == myoIndex + 1)
@@ -290,10 +308,12 @@ void UDataCollector::OnArmUnsync(uint64 myoId)
 		RightMyo = -1;
 	if (MyoDelegate)
 		MyoDelegate->OnArmUnsync(IdentifyMyo(myoId));
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnArmUnsync_End"));
 }
 
 void UDataCollector::OnPair(uint64 myoId)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnPair_Begin"));
 	auto myoIndex = MyoIndexForMyo(myoId);
 	if (myoIndex == -1) 
 	{
@@ -307,17 +327,21 @@ void UDataCollector::OnPair(uint64 myoId)
 	if (MyoDelegate != nullptr)
 		MyoDelegate->OnPair(IdentifyMyo(myoId));
 	LastPairedMyo = myoId;
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnPair_End"));
 }
 
 void UDataCollector::OnUnpair(uint64 myoId)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnUnpair_Begin"));
 	auto myoIndex = MyoIndexForMyo(myoId);
 	if (MyoDelegate != nullptr)
 		MyoDelegate->OnUnpair(IdentifyMyo(myoId));
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnUnpair_End"));
 }
 
 void UDataCollector::OnOrientationData(uint64 myoId, FQuat& quat)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnOrientationData_Begin"));
 	auto myoIndex = MyoIndexForMyo(myoId);
 	Data[myoIndex].Quaternion.X = quat.X;
 	Data[myoIndex].Quaternion.Y = quat.Y;
@@ -336,10 +360,12 @@ void UDataCollector::OnOrientationData(uint64 myoId, FQuat& quat)
 			EmitAnalogInputEventForKey(EMyoKeys::OrientationRoll, Data[myoIndex].ArmOrientation.Roll * OrientationScale.Roll, 0);
 		}
 	}
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnOrientationData_End"));
 }
 
 void UDataCollector::OnAccelerometerData(uint64 myoId, FVector& accel)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnAccelerometerData_Begin"));
 	auto myoIndex = MyoIndexForMyo(myoId);
 	Data[myoIndex].Acceleration.X = accel.X;
 	Data[myoIndex].Acceleration.Y = accel.Y;
@@ -358,10 +384,12 @@ void UDataCollector::OnAccelerometerData(uint64 myoId, FVector& accel)
 			EmitAnalogInputEventForKey(EMyoKeys::AccelerationZ, Data[myoIndex].ArmAcceleration.Z, 0);
 		}
 	}
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnAccelerometerData_End"));
 }
 
 void UDataCollector::OnGyroscopeData(uint64 myoId, FVector& gyro)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnGyroscopeData_Begin"));
 	auto myoIndex = MyoIndexForMyo(myoId);
 	Data[myoIndex].Gyro.X = gyro.X;
 	Data[myoIndex].Gyro.Y = gyro.Y;
@@ -377,22 +405,28 @@ void UDataCollector::OnGyroscopeData(uint64 myoId, FVector& gyro)
 			EmitAnalogInputEventForKey(EMyoKeys::GyroZ, Data[myoIndex].ArmGyro.Z * GyroScale, 0);
 		}
 	}
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnGyroscopeData_End"));
 }
 
 void UDataCollector::OnUnlock(uint64 myoId)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnUnlock_Begin"));
 	auto myoIndex = MyoIndexForMyo(myoId);
 	Data[myoIndex].IsLocked = false;
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnUnlock_End"));
 }
 
 void UDataCollector::OnLock(uint64 myoId)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnLock_Begin"));
 	auto myoIndex = MyoIndexForMyo(myoId);
 	Data[myoIndex].IsLocked = true;
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnLock_End"));
 }
 
 void UDataCollector::OnPose(uint64 myoId, MyoPose pose)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnPose_Begin"));
 	auto myoIndex = MyoIndexForMyo(myoId);
 	Data[myoIndex].Pose = pose;
 	UE_LOG(MyoPluginLog, Log, TEXT("Myo %d switched to pose %s."), IdentifyMyo(myoId), *ConvertPoseToString(pose));
@@ -406,30 +440,40 @@ void UDataCollector::OnPose(uint64 myoId, MyoPose pose)
 			LastPose = pose;
 		}
 	}
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnPose_End"));
 }
 
 void UDataCollector::OnEmgData(uint64 myoId, TArray<int8>& emg)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnEmgData_Begin"));
 	auto myoIndex = MyoIndexForMyo(myoId);
 	FMyoEmgData data;
 	for (auto emgValue : emg)
 		data.Streams.Add(emgValue);
 	if (MyoDelegate)
 		MyoDelegate->OnEmgData(myoIndex + 1, data);
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnEmgData_End"));
 }
 
 int32 UDataCollector::IdentifyMyo(uint64 myoId)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::IdentifyMyo_Begin"));
 	for (auto i = 0; i < KnownMyos.Num(); ++i) 
 	{
+		UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::IdentifyMyo_Loop"));
 		if (KnownMyos[i] == myoId)
+		{
+			UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::IdentifyMyo_Break"));
 			return i + 1;
+		}
 	}
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::IdentifyMyo_End"));
 	return 0;
 }
 
 uint64 UDataCollector::LastValidMyo()
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::LastValidMyo"));
 	for (auto i = 0; i < KnownMyos.Num(); ++i) 
 	{
 		auto myoId = KnownMyos[i];
@@ -441,16 +485,19 @@ uint64 UDataCollector::LastValidMyo()
 
 bool UDataCollector::MyoIsValidForInputMapping(uint64 myoId)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::MyoIsValidForInputMapping"));
 	return (myoId == LastPairedMyo);
 }
 
 int32 UDataCollector::MyoIndexForMyo(uint64 myoId)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::MyoIndexForMyo"));
 	return IdentifyMyo(myoId) - 1;
 }
 
 void UDataCollector::UnlockMyo(uint64 myoId, MyoUnlockType type)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::UnlockMyo_Begin"));
 	sendData.Add(OutputInformation());
 	auto& data = sendData.Last();
 	data.Ptr = reinterpret_cast<void*>(myoId);
@@ -459,10 +506,12 @@ void UDataCollector::UnlockMyo(uint64 myoId, MyoUnlockType type)
 	data.LockingPolicy = -1;
 	data.StreamEmgType = -1;
 	data.Vibration = -1;
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::UnlockMyo_End"));
 }
 
 void UDataCollector::LockMyo(uint64 myoId)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::LockMyo_Begin"));
 	auto myoIndex = MyoIndexForMyo(myoId);
 	sendData.Add(OutputInformation());
 	auto& data = sendData.Last();
@@ -472,10 +521,12 @@ void UDataCollector::LockMyo(uint64 myoId)
 	data.StreamEmgType = -1;
 	data.UnlockType = -1;
 	data.Vibration = -1;
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::LockMyo_End"));
 }
 
 bool UDataCollector::Startup()
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::Startup_Begin"));
 	if (sendDataWorker == nullptr)
 		sendDataWorker = new SendDataWorker(mutex, sendData);
 	if (receiveDataWorker == nullptr)
@@ -491,12 +542,13 @@ bool UDataCollector::Startup()
 		receiveThread = FRunnableThread::Create(receiveDataWorker, *name);
 	}
 	Enabled = true;
-
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::Startup_End"));
 	return true;
 }
 
 void UDataCollector::ShutDown()
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::ShutDown_Begin"));
 	if (sendThread != nullptr)
 	{
 		sendDataWorker->Stop();
@@ -521,16 +573,20 @@ void UDataCollector::ShutDown()
 		delete receiveDataWorker;
 		receiveDataWorker = nullptr;
 	}
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::ShutDown_End"));
 }
 
 void UDataCollector::ResetHub()
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::ResetHub_Begin"));
 	ShutDown();
 	Startup();
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::ResetHub_End"));
 }
 
 void UDataCollector::SetLockingPolicy(MyoLockingPolicy policy)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::SetLockingPolicy"));
 	LockingPolicy = policy;
 	sendData.Add(OutputInformation());
 	auto& data = sendData.Last();
@@ -544,6 +600,7 @@ void UDataCollector::SetLockingPolicy(MyoLockingPolicy policy)
 
 void UDataCollector::SetStreamEmg(uint64 myoId, MyoStreamEmgType type)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::SetStreamEmg"));
 	sendData.Add(OutputInformation());
 	auto& data = sendData.Last();
 	data.Ptr = reinterpret_cast<void*>(myoId);
@@ -556,6 +613,7 @@ void UDataCollector::SetStreamEmg(uint64 myoId, MyoStreamEmgType type)
 
 void UDataCollector::VibrateDevice(uint64 myoId, MyoVibrationType type)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::VibrateDevice"));
 	sendData.Add(OutputInformation());
 	auto& data = sendData.Last();
 	data.Ptr = reinterpret_cast<void*>(myoId);
@@ -568,39 +626,46 @@ void UDataCollector::VibrateDevice(uint64 myoId, MyoVibrationType type)
 
 FRotator UDataCollector::CombineRotators(FRotator a, FRotator b)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::CombineRotators"));
 	return FRotator(FQuat(b) * FQuat(a));
 }
 
 bool EmitKeyUpEventForKey(FKey key, int32 user, bool repeat)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("EmitKeyUpEventForKey"));
 	FKeyEvent KeyEvent(key, FSlateApplication::Get().GetModifierKeys(), user, repeat, 0, 0);
 	return FSlateApplication::Get().ProcessKeyUpEvent(KeyEvent);
 }
 
 bool EmitKeyDownEventForKey(FKey key, int32 user, bool repeat)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("EmitKeyDownEventForKey"));
 	FKeyEvent KeyEvent(key, FSlateApplication::Get().GetModifierKeys(), user, repeat, 0, 0);
 	return FSlateApplication::Get().ProcessKeyDownEvent(KeyEvent);
 }
 
 bool EmitAnalogInputEventForKey(FKey key, float value, int user)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("EmitAnalogInputEventForKey"));
 	FAnalogInputEvent AnalogInputEvent(key, FSlateApplication::Get().GetModifierKeys(), user, false, 0, 0, value);
 	return FSlateApplication::Get().ProcessAnalogInputEvent(AnalogInputEvent);
 }
 
 FRotator ConvertOrientationToUE(FRotator rawOrientation)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("ConvertOrientationToUE"));
 	return FRotator(rawOrientation.Pitch * -1.0f, rawOrientation.Yaw * -1.0f, rawOrientation.Roll);
 }
 
 FVector ConvertVectorToUE(FVector rawAcceleration)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("ConvertVectorToUE"));
 	return FVector(rawAcceleration.X, -rawAcceleration.Y, rawAcceleration.Z);
 }
 
 FVector ConvertAccelerationToBodySpace(FVector armAcceleration, FRotator orientation, FRotator armCorrection, MyoArmDirection direction)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("ConvertAccelerationToBodySpace"));
 	auto directionModifier = 1.0f;
 	if (direction == MyoArmDirection::Elbow)
 		directionModifier = -1.0f;
@@ -612,6 +677,7 @@ FVector ConvertAccelerationToBodySpace(FVector armAcceleration, FRotator orienta
 
 FRotator ConvertOrientationToArmSpace(FRotator convertedOrientation, FRotator armCorrection, MyoArmDirection direction)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("ConvertOrientationToArmSpace"));
 	auto directionModifier = 1.0f;
 	if (direction == MyoArmDirection::Elbow)
 	{
@@ -624,6 +690,7 @@ FRotator ConvertOrientationToArmSpace(FRotator convertedOrientation, FRotator ar
 
 FString ConvertPoseToString(MyoPose pose)
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("ConvertPoseToString"));
 	switch (pose)
 	{
 	case MyoPose::Rest:

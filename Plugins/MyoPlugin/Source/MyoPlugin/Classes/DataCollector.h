@@ -106,36 +106,63 @@ public:
 
 	UDataCollector(class FObjectInitializer const& objectInitializer);
 	~UDataCollector();
-
+	UFUNCTION()
 	void PressPose(MyoPose pose);
+	UFUNCTION()
 	void ReleasePose(MyoPose pose);
+	UFUNCTION()
 	void Tick(float deltaTime);
 	void ConvertData(FCriticalSection& mutex, InputInformation& data, uint64& id, FQuat& rot, FVector& accel, FVector& gyro, TArray<int8>& emg,
 		MyoPose& pose, MyoArm& arm, MyoArmDirection& direction, bool& pair, bool& connect, bool& armSync, bool& lock);
+	UFUNCTION()
 	void OnConnect(uint64 myoId);
+	UFUNCTION()
 	void OnDisconnect(uint64 myoId);
+	UFUNCTION()
 	void OnArmSync(uint64 myoId, MyoArm arm, MyoArmDirection xDirection);
+	UFUNCTION()
 	void OnArmUnsync(uint64 myoId);
+	UFUNCTION()
 	void OnPair(uint64 myoId);
+	UFUNCTION()
 	void OnUnpair(uint64 myoId);
+	UFUNCTION()
 	void OnOrientationData(uint64 myoId, FQuat& quat);
+	UFUNCTION()
 	void OnAccelerometerData(uint64 myoId, FVector& accel);
+	UFUNCTION()
 	void OnGyroscopeData(uint64 myoId, FVector& gyro);
+	UFUNCTION()
 	void OnUnlock(uint64 myoId);
+	UFUNCTION()
 	void OnLock(uint64 myoId);
+	UFUNCTION()
 	void OnPose(uint64 myoId, MyoPose pose);
+	UFUNCTION()
 	void OnEmgData(uint64 myoId, TArray<int8>& emg);
+	UFUNCTION()
 	int32 IdentifyMyo(uint64 myoId);
+	UFUNCTION()
 	uint64 LastValidMyo();
+	UFUNCTION()
 	bool MyoIsValidForInputMapping(uint64 myoId);
+	UFUNCTION()
 	int32 MyoIndexForMyo(uint64 myoId);
+	UFUNCTION()
 	void UnlockMyo(uint64 myoId, MyoUnlockType type = MyoUnlockType::Hold);
+	UFUNCTION()
 	void LockMyo(uint64 myoId);
+	UFUNCTION()
 	bool Startup();
+	UFUNCTION()
 	void ShutDown();
+	UFUNCTION()
 	void ResetHub();
+	UFUNCTION()
 	void SetLockingPolicy(MyoLockingPolicy policy);
+	UFUNCTION()
 	void SetStreamEmg(uint64 myoId, MyoStreamEmgType type);
+	UFUNCTION()
 	void VibrateDevice(uint64 myoId, MyoVibrationType type);
 		
 	static FRotator CombineRotators(FRotator a, FRotator b);

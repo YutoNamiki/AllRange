@@ -79,18 +79,18 @@ bool IMyoDelegateBlueprint::MyoIsValidId(int32 myoId)
 
 void IMyoDelegateBlueprint::SetInterfaceDelegate(UObject* newDelegate)
 {
-	UE_LOG(LogClass, Log, TEXT("InterfaceDelegate passed: %s"), *newDelegate->GetName());
-	if (newDelegate->GetClass()->ImplementsInterface(UMyoInterface::StaticClass()))
-		InterfaceDelegate = newDelegate;
-	else
-	{
-		if (ValidSelfPointer->GetClass()->ImplementsInterface(UMyoInterface::StaticClass()))
-			InterfaceDelegate = Cast<UObject>(this);
-		else
-			InterfaceDelegate = nullptr;
-		UE_LOG(LogClass, Log, TEXT("MyoDelegateBlueprint Warning: Delegate is NOT set, did your class implement HydraInterface?"));
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("MyoDelegateBlueprint Warning: Delegate is NOT set, did your class implement MyoInterface?"));
-	}
+	//UE_LOG(LogClass, Log, TEXT("InterfaceDelegate passed: %s"), *newDelegate->GetName());
+	//if (newDelegate->GetClass()->ImplementsInterface(UMyoInterface::StaticClass()))
+	//	InterfaceDelegate = newDelegate;
+	//else
+	//{
+	//	if (ValidSelfPointer->GetClass()->ImplementsInterface(UMyoInterface::StaticClass()))
+	//		InterfaceDelegate = Cast<UObject>(this);
+	//	else
+	//		InterfaceDelegate = nullptr;
+	//	UE_LOG(LogClass, Log, TEXT("MyoDelegateBlueprint Warning: Delegate is NOT set, did your class implement HydraInterface?"));
+	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("MyoDelegateBlueprint Warning: Delegate is NOT set, did your class implement MyoInterface?"));
+	//}
 }
 
 bool IMyoDelegateBlueprint::IsValidDelegate()
@@ -100,82 +100,82 @@ bool IMyoDelegateBlueprint::IsValidDelegate()
 
 void IMyoDelegateBlueprint::OnConnect(int32 myoId)
 {
-	if (MyoIsValidId(myoId))
-		IMyoInterface::Execute_OnConnect(InterfaceDelegate, InternalControllerForId(myoId));
+	//if (MyoIsValidId(myoId))
+	//	IMyoInterface::Execute_OnConnect(InterfaceDelegate, InternalControllerForId(myoId));
 }
 
 void IMyoDelegateBlueprint::OnDisconnect(int32 myoId)
 {
-	if (MyoIsValidId(myoId))
-		IMyoInterface::Execute_OnDisconnect(InterfaceDelegate, InternalControllerForId(myoId));
+	//if (MyoIsValidId(myoId))
+	//	IMyoInterface::Execute_OnDisconnect(InterfaceDelegate, InternalControllerForId(myoId));
 }
 
 void IMyoDelegateBlueprint::OnPair(int32 myoId)
 {
 	if (myoId > LatestFrame.Num())
 		InternalAddController(myoId);
-	if (MyoIsValidId(myoId))
-		IMyoInterface::Execute_OnPair(InterfaceDelegate, InternalControllerForId(myoId));
+	//if (MyoIsValidId(myoId))
+	//	IMyoInterface::Execute_OnPair(InterfaceDelegate, InternalControllerForId(myoId));
 }
 
 void IMyoDelegateBlueprint::OnUnpair(int32 myoId)
 {
-	if (MyoIsValidId(myoId))
-		IMyoInterface::Execute_OnUnpair(InterfaceDelegate, InternalControllerForId(myoId));
+	//if (MyoIsValidId(myoId))
+	//	IMyoInterface::Execute_OnUnpair(InterfaceDelegate, InternalControllerForId(myoId));
 }
 
 void IMyoDelegateBlueprint::OnArmMoved(int32 myoId, FVector armAcceleration, FRotator armOrientation, FVector armGyro, MyoPose pose)
 {
-	if (MyoIsValidId(myoId))
-		IMyoInterface::Execute_OnArmMoved(InterfaceDelegate, InternalControllerForId(myoId), armAcceleration, armOrientation, armGyro, pose);
+	//if (MyoIsValidId(myoId))
+	//	IMyoInterface::Execute_OnArmMoved(InterfaceDelegate, InternalControllerForId(myoId), armAcceleration, armOrientation, armGyro, pose);
 }
 
 void IMyoDelegateBlueprint::OnOrientationData(int32 myoId, FRotator rot)
 {
-	if (MyoIsValidId(myoId))
-		IMyoInterface::Execute_OnOrientationData(InterfaceDelegate, InternalControllerForId(myoId), rot);
+	//if (MyoIsValidId(myoId))
+	//	IMyoInterface::Execute_OnOrientationData(InterfaceDelegate, InternalControllerForId(myoId), rot);
 }
 
 void IMyoDelegateBlueprint::OnAccelerometerData(int32 myoId, FVector accel)
 {
-	if (MyoIsValidId(myoId))
-		IMyoInterface::Execute_OnAccelerometerData(InterfaceDelegate, InternalControllerForId(myoId), accel);
+	//if (MyoIsValidId(myoId))
+	//	IMyoInterface::Execute_OnAccelerometerData(InterfaceDelegate, InternalControllerForId(myoId), accel);
 }
 
 void IMyoDelegateBlueprint::OnGyroscopeData(int32 myoId, FVector gyro)
 {
-	if (MyoIsValidId(myoId))
-		IMyoInterface::Execute_OnGyroscopeData(InterfaceDelegate, InternalControllerForId(myoId), gyro);
+	//if (MyoIsValidId(myoId))
+	//	IMyoInterface::Execute_OnGyroscopeData(InterfaceDelegate, InternalControllerForId(myoId), gyro);
 }
 
 void IMyoDelegateBlueprint::OnPose(int32 myoId, MyoPose pose)
 {
-	if (MyoIsValidId(myoId))
-		IMyoInterface::Execute_OnPose(InterfaceDelegate, InternalControllerForId(myoId), pose);
+	//if (MyoIsValidId(myoId))
+	//	IMyoInterface::Execute_OnPose(InterfaceDelegate, InternalControllerForId(myoId), pose);
 }
 
 void IMyoDelegateBlueprint::OnArmSync(int32 myoId, MyoArm arm, MyoArmDirection direction)
 {
-	if (MyoIsValidId(myoId))
-		IMyoInterface::Execute_OnArmSync(InterfaceDelegate, InternalControllerForId(myoId), arm, direction);
+	//if (MyoIsValidId(myoId))
+	//	IMyoInterface::Execute_OnArmSync(InterfaceDelegate, InternalControllerForId(myoId), arm, direction);
 }
 
 void IMyoDelegateBlueprint::OnArmUnsync(int32 myoId)
 {
-	if (MyoIsValidId(myoId))
-		IMyoInterface::Execute_OnArmUnsync(InterfaceDelegate, InternalControllerForId(myoId));
+	//if (MyoIsValidId(myoId))
+	//	IMyoInterface::Execute_OnArmUnsync(InterfaceDelegate, InternalControllerForId(myoId));
 }
 
 void IMyoDelegateBlueprint::OnEmgData(int32 myoId, FMyoEmgData data)
 {
-	if (MyoIsValidId(myoId))
-		IMyoInterface::Execute_OnEmgData(InterfaceDelegate, InternalControllerForId(myoId), data);
+	//if (MyoIsValidId(myoId))
+	//	IMyoInterface::Execute_OnEmgData(InterfaceDelegate, InternalControllerForId(myoId), data);
 }
 
 void IMyoDelegateBlueprint::MyoDisabled()
 {
-	if (IsValidDelegate())
-		IMyoInterface::Execute_DeviceDisabled(InterfaceDelegate);
+	//if (IsValidDelegate())
+	//	IMyoInterface::Execute_DeviceDisabled(InterfaceDelegate);
 }
 
 UMyoController* IMyoDelegateBlueprint::InternalAddController(int newId)

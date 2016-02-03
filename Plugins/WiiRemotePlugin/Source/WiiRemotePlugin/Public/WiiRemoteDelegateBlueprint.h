@@ -16,8 +16,11 @@ class IWiiRemoteDelegateBlueprint : public IWiiRemoteDelegate
 	GENERATED_IINTERFACE_BODY()
 
 public:
+	UPROPERTY()
 	UObject* ValidSelfPointer;
+	UPROPERTY()
 	UObject* InterfaceDelegate;
+	UPROPERTY()
 	TArray <UWiiRemoteController*> LatestFrame;
 
 	void SetInterfaceDelegate(UObject* newDelegate);
