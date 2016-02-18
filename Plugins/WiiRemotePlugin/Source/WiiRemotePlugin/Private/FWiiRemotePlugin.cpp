@@ -226,8 +226,8 @@ void FWiiRemotePlugin::PlaySquareWave(int32 playerIndex, WiiRemoteSpeakerFrequen
 	auto wiiRemote = &wiiRemoteManager->WiiRemotes[playerIndex];
 	if (wiiRemote->IsConnected())
 	{
-		if (wiiRemote->Speaker.bEnabled)
-			wiiRemote->PlaySquareWave(static_cast<speaker_freq>(frequency), static_cast<BYTE>(volume));
+		if (wiiRemote->Speaker.Enabled)
+			wiiRemote->PlaySquareWave(static_cast<SpeakerFrequency>(frequency), static_cast<BYTE>(volume));
 	}
 }
 
@@ -238,13 +238,13 @@ void FWiiRemotePlugin::PlaySample(int32 playerIndex, FWiiRemoteSample* sample, W
 	auto wiiRemote = &wiiRemoteManager->WiiRemotes[playerIndex];
 	if (wiiRemote->IsConnected())
 	{
-		if (wiiRemote->Speaker.bEnabled)
+		if (wiiRemote->Speaker.Enabled)
 		{
-			wiimote_sample sam;
-			sam.freq = static_cast<speaker_freq>(sample->Frequency);
-			sam.length = sample->Length;
-			sam.samples = sample->Samples.GetData();
-			wiiRemote->PlaySample(sam, volume, static_cast<speaker_freq>(frequency));
+			WiiRemoteSample sam;
+			sam.Frequency = static_cast<SpeakerFrequency>(sample->Frequency);
+			sam.Length = sample->Length;
+			sam.Samples = sample->Samples.GetData();
+			wiiRemote->PlaySample(sam, volume, static_cast<SpeakerFrequency>(frequency));
 		}
 	}
 }

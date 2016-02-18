@@ -67,7 +67,7 @@ namespace UnrealBuildTool.Rules
             {
                 isLibrarySupported = true;
                 string LibrariesPath = Path.Combine(ThirdPartyPath, "Lib");
-                PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "WiiRemoteLibrary.lib"));
+                PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "WiiRemoteYourself!.lib"));
             }
             if (isLibrarySupported)
                 PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "Include"));

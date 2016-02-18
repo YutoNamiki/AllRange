@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AllowWindowsPlatformTypes.h"
-#include "wiimote.h"
+#include "WiiRemoteYourself.h"
 #include "HideWindowsPlatformTypes.h"
 
 #include "WiiRemoteManager.generated.h"
@@ -81,8 +81,7 @@ class WIIREMOTEPLUGIN_API UWiiRemoteManager : public UObject
 	GENERATED_BODY()
 
 public:
-	//TArray<wiimote> WiiRemotes;
-	wiimote WiiRemotes[4];
+	WiiRemote WiiRemotes[4];
 	TArray<FWiiRemoteDeviceData> Data;
 	TArray<FWiiRemoteChangeFlags> ChangeFlags;
 	TArray<uint64> LastPairedWiiRemoteID;
@@ -97,42 +96,42 @@ public:
 	void Reset();
 	void Tick(float deltaTime);
 	int32 IdentifyWiiRemote(uint64 wiiRemoteId);
-	wiimote* LastValidWiiRemote();
+	WiiRemote* LastValidWiiRemote();
 	bool IsWiiRemoteValidForInputMapping(uint64 wiiRemoteId);
 	int32 WiiRemoteIndexForWiiRemote(uint64 wiiRemoteId);
 
-	void OnConnected(wiimote* wiiRemote);
-	void OnConnectionLost(wiimote* wiiRemote);
-	void OnBatteryChanged(wiimote* wiiRemote, uint8 batteryPercent);
-	void OnBatteryDrained(wiimote* wiiRemote);
-	void OnLEDsChanged(wiimote* wiiRemote, uint8 ledBits);
-	void OnButtonsChanged(wiimote* wiiRemote, FWiiRemoteButtons buttons);
-	void OnAccelChanged(wiimote* wiiRemote, FVector accel);
-	void OnOrientationChanged(wiimote* wiiRemote, float pitch, float roll);
-	void OnIRChanged(wiimote* wiiRemote, TArray<FWiiRemoteDot> dots);
-	void OnNunchukConnected(wiimote* wiiRemote);
-	void OnNunchukButtonsChanged(wiimote* wiiRemote, FWiiRemoteNunchukButtons buttons);
-	void OnNunchukAccelChanged(wiimote* wiiRemote, FVector accel);
-	void OnNunchukOrientationChanged(wiimote* wiiRemote, float pitch, float roll);
-	void OnNunchukJoystickChanged(wiimote* wiiRemote, float x, float y);
-	void OnClassicConnected(wiimote* wiiRemote);
-	void OnClassicButtonsChanged(wiimote* wiiRemote, FWiiRemoteClassicControllerButtons buttons);
-	void OnClassicJoystickLChanged(wiimote* wiiRemote, float x, float y);
-	void OnClassicJoystickRChanged(wiimote* wiiRemote, float x, float y);
-	void OnClassicTriggersChanged(wiimote* wiiRemote, float left, float right);
-	void OnBalanceConnected(wiimote* wiiRemote);
-	void OnBalanceWeightChanged(wiimote* wiiRemote, FWiiRemoteBalanceBoard balanceBoard);
-	void OnMotionPlusDetected(wiimote* wiiRemote);
-	void OnMotionPlusEnabled(wiimote* wiiRemote);
-	void OnMotionPlusSpeedChanged(wiimote* wiiRemote, FRotator speed);
-	void OnMotionPlusExtensionConnected(wiimote* wiiRemote);
-	void OnMotionPlusExtensionDisconnected(wiimote* wiiRemote);
-	void OnExtensionDisconnected(wiimote* wiiRemote);
-	static void SetWiiRemoteButtons(wiimote& wiiRemote, FWiiRemoteButtons& buttons);
-	static void SetWiiRemoteDots(wiimote& wiiRemote, TArray<FWiiRemoteDot>& dots);
-	static void SetWiiRemoteNunchukButtons(wiimote& wiiRemote, FWiiRemoteNunchukButtons& buttons);
-	static void SetWiiRemoteClassicControllerButtons(wiimote& wiiRemote, FWiiRemoteClassicControllerButtons& buttons);
-	static void SetWiiRemoteBalanceBoard(wiimote& wiiRemote, FWiiRemoteBalanceBoard& balanceBoard);
+	void OnConnected(WiiRemote* wiiRemote);
+	void OnConnectionLost(WiiRemote* wiiRemote);
+	void OnBatteryChanged(WiiRemote* wiiRemote, uint8 batteryPercent);
+	void OnBatteryDrained(WiiRemote* wiiRemote);
+	void OnLEDsChanged(WiiRemote* wiiRemote, uint8 ledBits);
+	void OnButtonsChanged(WiiRemote* wiiRemote, FWiiRemoteButtons buttons);
+	void OnAccelChanged(WiiRemote* wiiRemote, FVector accel);
+	void OnOrientationChanged(WiiRemote* wiiRemote, float pitch, float roll);
+	void OnIRChanged(WiiRemote* wiiRemote, TArray<FWiiRemoteDot> dots);
+	void OnNunchukConnected(WiiRemote* wiiRemote);
+	void OnNunchukButtonsChanged(WiiRemote* wiiRemote, FWiiRemoteNunchukButtons buttons);
+	void OnNunchukAccelChanged(WiiRemote* wiiRemote, FVector accel);
+	void OnNunchukOrientationChanged(WiiRemote* wiiRemote, float pitch, float roll);
+	void OnNunchukJoystickChanged(WiiRemote* wiiRemote, float x, float y);
+	void OnClassicConnected(WiiRemote* wiiRemote);
+	void OnClassicButtonsChanged(WiiRemote* wiiRemote, FWiiRemoteClassicControllerButtons buttons);
+	void OnClassicJoystickLChanged(WiiRemote* wiiRemote, float x, float y);
+	void OnClassicJoystickRChanged(WiiRemote* wiiRemote, float x, float y);
+	void OnClassicTriggersChanged(WiiRemote* wiiRemote, float left, float right);
+	void OnBalanceConnected(WiiRemote* wiiRemote);
+	void OnBalanceWeightChanged(WiiRemote* wiiRemote, FWiiRemoteBalanceBoard balanceBoard);
+	void OnMotionPlusDetected(WiiRemote* wiiRemote);
+	void OnMotionPlusEnabled(WiiRemote* wiiRemote);
+	void OnMotionPlusSpeedChanged(WiiRemote* wiiRemote, FRotator speed);
+	void OnMotionPlusExtensionConnected(WiiRemote* wiiRemote);
+	void OnMotionPlusExtensionDisconnected(WiiRemote* wiiRemote);
+	void OnExtensionDisconnected(WiiRemote* wiiRemote);
+	static void SetWiiRemoteButtons(WiiRemote& wiiRemote, FWiiRemoteButtons& buttons);
+	static void SetWiiRemoteDots(WiiRemote& wiiRemote, TArray<FWiiRemoteDot>& dots);
+	static void SetWiiRemoteNunchukButtons(WiiRemote& wiiRemote, FWiiRemoteNunchukButtons& buttons);
+	static void SetWiiRemoteClassicControllerButtons(WiiRemote& wiiRemote, FWiiRemoteClassicControllerButtons& buttons);
+	static void SetWiiRemoteBalanceBoard(WiiRemote& wiiRemote, FWiiRemoteBalanceBoard& balanceBoard);
 	
 private:
 	static bool EmitKeyUpEventForKey(FKey key, int32 user, bool repeat);

@@ -24,5 +24,5 @@ struct IR
 	static const unsigned int MaxRawY = 767;
 
 	IRMode Mode;
-	IRDot Dots[4];
+	IRDot Dot[4];
 };

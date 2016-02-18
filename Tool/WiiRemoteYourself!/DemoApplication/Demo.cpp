@@ -240,7 +240,7 @@ reconnect:
 		const auto dotSize = (remote.IR.Mode == IRMode::Extended);
 		for (auto index = 0; index < 4; index++)
 		{
-			auto& dot = remote.IR.Dot[index];
+			auto& dot = remote.IR.Dots[index];
 			if (!remote.IsBalanceBoard())
 				SetConsoleTextAttribute(console, WHITE);
 			printf_s("%u: ", index);

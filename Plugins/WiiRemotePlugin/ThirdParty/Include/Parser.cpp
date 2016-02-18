@@ -242,8 +242,8 @@ int WiiRemote::ParseIR(unsigned char* buffer)
 	case IRMode::Basic:
 		for (auto step = 0; step < 2; step++)
 		{
-			auto& dot0 = internal.IR.Dots[step * 2 + 0];
-			auto& dot1 = internal.IR.Dots[step * 2 + 1];
+			auto& dot0 = internal.IR.Dot[step * 2 + 0];
+			auto& dot1 = internal.IR.Dot[step * 2 + 1];
 			const auto offs = 6 + (step * 5);
 			dot0.Visible = !(buffer[offs + 0] == 0xff && buffer[offs + 1] == 0xff);
 			dot1.Visible = !(buffer[offs + 3] == 0xff && buffer[offs + 4] == 0xff);
@@ -266,7 +266,7 @@ int WiiRemote::ParseIR(unsigned char* buffer)
 	case IRMode::Extended:
 		for (auto index = 0; index < 4; index++)
 		{
-			auto& dot = internal.IR.Dots[index];
+			auto& dot = internal.IR.Dot[index];
 			const auto offs = 6 + (index * 3);
 			dot.Visible = !(buffer[offs] == 0xff && buffer[offs + 1] == 0xff && buffer[offs + 2] == 0xff);
 			if (dot.Visible)
