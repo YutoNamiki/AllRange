@@ -6,6 +6,8 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(MyoPluginLog, Log, All);
 
+class UMyoController;
+
 UENUM(BlueprintType)
 enum class MyoArm : uint8
 {
@@ -105,6 +107,21 @@ struct FMyoDeviceData
 	bool IsLocked;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FConnectSignature, UMyoController*, Myo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDisconnectSignature, UMyoController*, Myo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPairSignature, UMyoController*, Myo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnPairSignature, UMyoController*, Myo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FArmMovedSignature, UMyoController*, Myo, FVector, ArmAcceleration, FRotator, ArmOrientation, FVector, ArmGyro, MyoPose, Pose);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FQuaternionDataSignature, UMyoController*, Myo, FQuat, Quaternion);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOrientationDataSignature, UMyoController*, Myo, FRotator, Rotation);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAccelerometerDataSignature, UMyoController*, Myo, FVector, Acceleration);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGyroscopeDataSignature, UMyoController*, Myo, FVector, Gyro);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPoseSignature, UMyoController*, Myo, MyoPose, Pose);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FArmSyncSignature, UMyoController*, Myo, MyoArm, Arm, MyoArmDirection, Direction);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FArmUnsyncSignature, UMyoController*, Myo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEmgDataSignature, UMyoController*, Myo, FMyoEmgData, Data);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDisabledSignature);
+
 UINTERFACE(MinimalAPI)
 class UMyoDelegate : public UInterface
 {
@@ -115,19 +132,27 @@ class IMyoDelegate
 {
 	GENERATED_IINTERFACE_BODY()
 
-	virtual void OnConnect(int32 myoId);
-	virtual void OnDisconnect(int32 myoId);
-	virtual void OnPair(int32 myoId);
-	virtual void OnUnpair(int32 myoId);
-	virtual void OnArmMoved(int32 myoId, FVector armAcceleration, FRotator armOrientation, FVector armGyro, MyoPose pose);
-	virtual void OnOrientationData(int32 myoId, FQuat quat);
-	virtual void OnOrientationData(int32 myoId, FRotator rot);
-	virtual void OnAccelerometerData(int32 myoId, FVector accel);
-	virtual void OnGyroscopeData(int32 myoId, FVector gyro);
-	virtual void OnPose(int32 myoId, MyoPose pose);
-	virtual void OnArmSync(int32 myoId, MyoArm arm, MyoArmDirection direction);
-	virtual void OnArmUnsync(int32 myoId);
-	virtual void OnEmgData(int32 myoId, FMyoEmgData data);
+public:
+	UObject* ValidSelfPointer;
+	UObject* InterfaceDelegate;
+	TArray<UMyoController*> LatestFrame;
+
+	virtual UMyoController* MyoPrimaryMyo();
+	virtual UMyoController* MyoLeftMyo();
+	virtual UMyoController* MyoRightMyo();
+	virtual void OnConnectFunction(int32 myoId);
+	virtual void OnDisconnectFunction(int32 myoId);
+	virtual void OnPairFunction(int32 myoId);
+	virtual void OnUnpairFunction(int32 myoId);
+	virtual void OnArmMovedFunction(int32 myoId, FVector armAcceleration, FRotator armOrientation, FVector armGyro, MyoPose pose);
+	virtual void OnOrientationDataFunction(int32 myoId, FQuat quat);
+	virtual void OnOrientationDataFunction(int32 myoId, FRotator rot);
+	virtual void OnAccelerometerDataFunction(int32 myoId, FVector accel);
+	virtual void OnGyroscopeDataFunction(int32 myoId, FVector gyro);
+	virtual void OnPoseFunction(int32 myoId, MyoPose pose);
+	virtual void OnArmSyncFunction(int32 myoId, MyoArm arm, MyoArmDirection direction);
+	virtual void OnArmUnsyncFunction(int32 myoId);
+	virtual void OnEmgDataFunction(int32 myoId, FMyoEmgData data);
 	virtual void MyoDisabled();
 	virtual void MyoVibrateDevice(int32 myoId, MyoVibrationType type);
 	virtual void MyoSetLockingPolicy(MyoLockingPolicy policy);
@@ -147,4 +172,10 @@ class IMyoDelegate
 	virtual void MyoStartup();
 	virtual void MyoShutdown();
 	virtual void MyoTick(float DeltaTime);
+
+	void SetInterfaceDelegate(UObject* newDelegate);
+	bool IsValidDelegate();
+	UMyoController* InternalAddController(int32 newId);
+	UMyoController* InternalControllerForId(int32 myoId);
+
 };

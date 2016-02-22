@@ -134,6 +134,8 @@ public:
 	static void SetWiiRemoteBalanceBoard(WiiRemote& wiiRemote, FWiiRemoteBalanceBoard& balanceBoard);
 	
 private:
+	int32 id = 0;
+
 	static bool EmitKeyUpEventForKey(FKey key, int32 user, bool repeat);
 	static bool EmitKeyDownEventForKey(FKey key, int32 user, bool repeat);
 	static bool EmitAnalogInputEventForKey(FKey key, float value, int32 user);

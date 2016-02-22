@@ -104,6 +104,7 @@ public:
 	virtual void SetDelegate(IWiiRemoteDelegate* newDelegate) override;
 	virtual void RemoveDelgate() override;
 	virtual void Tick(float deltaTime) override;
+	virtual void SetReportType(int32 playerIndex, ReportType reportType) override;
 	virtual void SetLED(int32 playerIndex, WiiRemoteLED ledBits) override;
 	virtual void SetRumble(int32 playerIndex, bool on) override;
 	virtual void SetRumbleForAsync(int32 playerIndex, int32 milliseconds) override;

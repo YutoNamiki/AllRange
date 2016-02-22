@@ -1,13 +1,12 @@
 #pragma once
 
 #include "WiiRemoteDelegate.h"
-#include "WiiRemoteDelegateBlueprint.h"
 #include "WiiRemoteController.generated.h"
 
 UCLASS(BlueprintType)
 class WIIREMOTEPLUGIN_API UWiiRemoteController : public UObject
 {
-	friend class IWiiRemoteDelegateBlueprint;
+	friend class IWiiRemoteDelegate;
 
 	GENERATED_BODY()
 

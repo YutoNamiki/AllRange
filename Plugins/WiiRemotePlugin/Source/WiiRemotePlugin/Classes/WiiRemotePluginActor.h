@@ -1,21 +1,25 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
-#include "WiiRemoteDelegateBlueprint.h"
 #include "WiiRemoteInterface.h"
 #include "WiiRemotePluginActor.generated.h"
 
+class UWiiRemoteComponent;
+
 UCLASS()
-class AWiiRemotePluginActor : public AActor, public IWiiRemoteDelegateBlueprint, public IWiiRemoteInterface
+class AWiiRemotePluginActor : public AActor, public IWiiRemoteInterface
 {
 	GENERATED_BODY()
 
 public:
+	UWiiRemoteComponent* WiiRemoteComponent;
+
 	AWiiRemotePluginActor(const FObjectInitializer& PCIP);
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable, Category = "WiiRemote")
+	void SetReportType(int32 playerIndex, ReportType reportType);
 	UFUNCTION(BlueprintCallable, Category = "WiiRemote")
 	void SetLED(int32 playerIndex, WiiRemoteLED ledBits);
 	UFUNCTION(BlueprintCallable, Category = "WiiRemote")

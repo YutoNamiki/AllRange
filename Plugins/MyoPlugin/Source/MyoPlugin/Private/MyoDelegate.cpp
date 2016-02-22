@@ -2,24 +2,55 @@
 
 #include "MyoPluginPrivatePCH.h"
 #include "MyoDelegate.h"
+#include "MyoController.h"
 
 DEFINE_LOG_CATEGORY(MyoPluginLog);
 
 UMyoDelegate::UMyoDelegate(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) { }
-void IMyoDelegate::OnConnect(int32 myoId) { }
-void IMyoDelegate::OnDisconnect(int32 myoId) { }
-void IMyoDelegate::OnPair(int32 myoId) { }
-void IMyoDelegate::OnUnpair(int32 myoId) { }
-void IMyoDelegate::OnArmMoved(int32 myoId, FVector armAcceleration, FRotator armOrientation, FVector armGyro, MyoPose pose) { }
-void IMyoDelegate::OnOrientationData(int32 myoId, FQuat quat) { }
-void IMyoDelegate::OnOrientationData(int32 myoId, FRotator rot) { }
-void IMyoDelegate::OnAccelerometerData(int32 myoId, FVector accel) { }
-void IMyoDelegate::OnGyroscopeData(int32 myoId, FVector gyro) { }
-void IMyoDelegate::OnPose(int32 myoId, MyoPose pose) { }
-void IMyoDelegate::OnArmSync(int32 myoId, MyoArm arm, MyoArmDirection direction) { }
-void IMyoDelegate::OnArmUnsync(int32 myoId) { }
-void IMyoDelegate::OnEmgData(int32 myoId, FMyoEmgData data) { }
+void IMyoDelegate::OnConnectFunction(int32 myoId) { }
+void IMyoDelegate::OnDisconnectFunction(int32 myoId) { }
+
+void IMyoDelegate::OnPairFunction(int32 myoId)
+{ 
+	if (myoId > LatestFrame.Num())
+		InternalAddController(myoId);
+}
+
+void IMyoDelegate::OnUnpairFunction(int32 myoId) { }
+void IMyoDelegate::OnArmMovedFunction(int32 myoId, FVector armAcceleration, FRotator armOrientation, FVector armGyro, MyoPose pose) { }
+void IMyoDelegate::OnOrientationDataFunction(int32 myoId, FQuat quat) { }
+void IMyoDelegate::OnOrientationDataFunction(int32 myoId, FRotator rot) { }
+void IMyoDelegate::OnAccelerometerDataFunction(int32 myoId, FVector accel) { }
+void IMyoDelegate::OnGyroscopeDataFunction(int32 myoId, FVector gyro) { }
+void IMyoDelegate::OnPoseFunction(int32 myoId, MyoPose pose) { }
+void IMyoDelegate::OnArmSyncFunction(int32 myoId, MyoArm arm, MyoArmDirection direction) { }
+void IMyoDelegate::OnArmUnsyncFunction(int32 myoId) { }
+void IMyoDelegate::OnEmgDataFunction(int32 myoId, FMyoEmgData data) { }
 void IMyoDelegate::MyoDisabled() { }
+
+UMyoController* IMyoDelegate::MyoPrimaryMyo()
+{
+	auto myoId = 0;
+	auto available = false;
+	MyoPrimaryMyoId(available, myoId);
+	return InternalControllerForId(myoId);
+}
+
+UMyoController* IMyoDelegate::MyoLeftMyo()
+{
+	auto myoId = 0;
+	auto available = false;
+	MyoLeftMyoId(available, myoId);
+	return InternalControllerForId(myoId);
+}
+
+UMyoController* IMyoDelegate::MyoRightMyo()
+{
+	auto myoId = 0;
+	auto available = false;
+	MyoRightMyoId(available, myoId);
+	return InternalControllerForId(myoId);
+}
 
 void IMyoDelegate::MyoVibrateDevice(int32 myoId, MyoVibrationType type)
 {
@@ -123,10 +154,10 @@ int32 IMyoDelegate::MyoMaxId()
 
 bool IMyoDelegate::MyoIsValidId(int32 myoId)
 {
+	if (!IsValidDelegate())
+		return false;
 	if (IMyoPlugin::IsAvailable())
-	{
 		return IMyoPlugin::Get().IsValidDeviceId(myoId);
-	}
 	return false;
 }
 
@@ -151,6 +182,13 @@ void IMyoDelegate::MyoStartup()
 	{
 		IMyoPlugin::Get().SetDelegate(this);
 	}
+	for (int i = 0; i < MyoMaxId(); i++)
+	{
+		InternalAddController(i + 1);
+	}
+	auto validUObject = Cast<UObject>(ValidSelfPointer);
+	if (!InterfaceDelegate && validUObject)
+		SetInterfaceDelegate(validUObject);
 }
 
 void IMyoDelegate::MyoShutdown()
@@ -167,4 +205,50 @@ void IMyoDelegate::MyoTick(float DeltaTime)
 	{
 		IMyoPlugin::Get().MyoTick(DeltaTime);
 	}
+	for (int i = 0; i < MyoMaxId(); i++)
+	{
+		auto controller = LatestFrame[i];
+		controller->SetFromMyoDeviceData(IMyoDelegate::MyoLatestData(i + 1));
+		controller->MyoId = i + 1;
+	}
+}
+
+void IMyoDelegate::SetInterfaceDelegate(UObject* newDelegate)
+{
+	UE_LOG(LogClass, Log, TEXT("InterfaceDelegate passed: %s"), *newDelegate->GetName());
+	if (newDelegate != nullptr)
+		InterfaceDelegate = newDelegate;
+	else
+	{
+		if (ValidSelfPointer != nullptr)
+			InterfaceDelegate = Cast<UObject>(this);
+		else
+			InterfaceDelegate = nullptr;
+	}
+}
+
+bool IMyoDelegate::IsValidDelegate()
+{
+	return (InterfaceDelegate != nullptr);
+}
+
+UMyoController* IMyoDelegate::InternalAddController(int32 newId)
+{
+	auto validUObject = Cast<UObject>(ValidSelfPointer);
+	UMyoController* controller;
+	if (validUObject)
+		controller = NewObject<UMyoController>(validUObject);
+	else
+		controller = NewObject<UMyoController>();
+	LatestFrame.Add(controller);
+	controller->myoDelegate = this;
+	controller->MyoId = newId;
+	return controller;
+}
+
+UMyoController* IMyoDelegate::InternalControllerForId(int32 myoId)
+{
+	if (MyoIsValidId(myoId))
+		return LatestFrame[myoId - 1];
+	return nullptr;
 }

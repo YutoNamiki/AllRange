@@ -58,7 +58,7 @@ bool UWiiRemoteManager::Startup()
 
 void UWiiRemoteManager::ShutDown()
 {
-	
+	id = 0;
 }
 
 void UWiiRemoteManager::Reset()
@@ -262,7 +262,7 @@ void UWiiRemoteManager::OnConnected(WiiRemote* wiiRemote)
 {
 	UE_LOG(WiiRemotePluginLog, Log, TEXT("WiiRemote %d  has connected."), IdentifyWiiRemote(wiiRemote->UniqueID));
 	if (WiiRemoteDelegate)
-		WiiRemoteDelegate->OnConnected(IdentifyWiiRemote(wiiRemote->UniqueID));
+		WiiRemoteDelegate->OnConnectedFunction(IdentifyWiiRemote(wiiRemote->UniqueID));
 }
 
 void UWiiRemoteManager::OnConnectionLost(WiiRemote* wiiRemote)
@@ -276,7 +276,7 @@ void UWiiRemoteManager::OnConnectionLost(WiiRemote* wiiRemote)
 	UE_LOG(WiiRemotePluginLog, Log, TEXT("WiiRemote %d  has disconnected."), IdentifyWiiRemote(wiiRemote->UniqueID));
 	wiiRemote->SetLEDs(0x00);
 	if (WiiRemoteDelegate)
-		WiiRemoteDelegate->OnCennectionLost(IdentifyWiiRemote(wiiRemote->UniqueID));
+		WiiRemoteDelegate->OnConnectionLostFunction(IdentifyWiiRemote(wiiRemote->UniqueID));
 	for (auto i = 0; i < LastPairedWiiRemoteID.Num(); i++)
 	{
 		if (wiiRemote->UniqueID == LastPairedWiiRemoteID[i])
@@ -293,7 +293,7 @@ void UWiiRemoteManager::OnBatteryChanged(WiiRemote* wiiRemote, uint8 batteryPerc
 		return;
 	UE_LOG(WiiRemotePluginLog, Log, TEXT("WiiRemote %d Battery remains %d %"), batteryPercent);
 	if (WiiRemoteDelegate)
-		WiiRemoteDelegate->OnBatteryChanged(wiiRemote->UniqueID, static_cast<int32>(batteryPercent));
+		WiiRemoteDelegate->OnBatteryChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), static_cast<int32>(batteryPercent));
 }
 
 void UWiiRemoteManager::OnBatteryDrained(WiiRemote* wiiRemote)
@@ -305,7 +305,7 @@ void UWiiRemoteManager::OnBatteryDrained(WiiRemote* wiiRemote)
 		return;
 	UE_LOG(WiiRemotePluginLog, Log, TEXT("WiiRemote %d Battery has drained."));
 	if (WiiRemoteDelegate)
-		WiiRemoteDelegate->OnBatteryDrained(wiiRemote->UniqueID);
+		WiiRemoteDelegate->OnBatteryDrainedFunction(IdentifyWiiRemote(wiiRemote->UniqueID));
 }
 
 void UWiiRemoteManager::OnLEDsChanged(WiiRemote* wiiRemote, uint8 ledBits)
@@ -316,7 +316,7 @@ void UWiiRemoteManager::OnLEDsChanged(WiiRemote* wiiRemote, uint8 ledBits)
 	if (!Data[index].IsInitialized)
 		return;
 	if (WiiRemoteDelegate)
-		WiiRemoteDelegate->OnLEDsChanged(wiiRemote->UniqueID, static_cast<WiiRemoteLED>(ledBits));
+		WiiRemoteDelegate->OnLEDsChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), static_cast<WiiRemoteLED>(ledBits));
 }
 
 void UWiiRemoteManager::OnButtonsChanged(WiiRemote* wiiRemote, FWiiRemoteButtons buttons)
@@ -344,7 +344,7 @@ void UWiiRemoteManager::OnButtonsChanged(WiiRemote* wiiRemote, FWiiRemoteButtons
 			UpdateButtons(dataButtons.IsPushUp, buttons.IsPushUp, EWiiRemoteKeys::Up, index);
 		}
 		Data[index].Buttons = buttons;
-		WiiRemoteDelegate->OnButtonsChanged(wiiRemote->UniqueID, Data[index].Buttons);
+		WiiRemoteDelegate->OnButtonsChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), Data[index].Buttons);
 	}
 }
 
@@ -364,7 +364,7 @@ void UWiiRemoteManager::OnAccelChanged(WiiRemote* wiiRemote, FVector accel)
 			EmitAnalogInputEventForKey(EWiiRemoteKeys::AccelerationY, Data[index].Acceleration.Y, index);
 			EmitAnalogInputEventForKey(EWiiRemoteKeys::AccelerationZ, Data[index].Acceleration.Z, index);
 		}
-		WiiRemoteDelegate->OnAccelChanged(wiiRemote->UniqueID, Data[index].Acceleration);
+		WiiRemoteDelegate->OnAccelChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), Data[index].Acceleration);
 	}
 }
 
@@ -384,7 +384,7 @@ void UWiiRemoteManager::OnOrientationChanged(WiiRemote* wiiRemote, float pitch, 
 			EmitAnalogInputEventForKey(EWiiRemoteKeys::OrientationPitch, Data[index].OrientationPitch, index);
 			EmitAnalogInputEventForKey(EWiiRemoteKeys::OrientationRoll, Data[index].OrientationRoll, index);
 		}
-		WiiRemoteDelegate->OnOrientationChanged(wiiRemote->UniqueID, Data[index].OrientationPitch, Data[index].OrientationRoll);
+		WiiRemoteDelegate->OnOrientationChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), Data[index].OrientationPitch, Data[index].OrientationRoll);
 	}
 }
 
@@ -441,7 +441,7 @@ void UWiiRemoteManager::OnIRChanged(WiiRemote* wiiRemote, TArray<FWiiRemoteDot> 
 				EmitAnalogInputEventForKey(EWiiRemoteKeys::Dot4_Y, 0.0f, index);
 			}
 		}
-		WiiRemoteDelegate->OnIRChanged(wiiRemote->UniqueID, Data[index].Dots);
+		WiiRemoteDelegate->OnIRChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), Data[index].Dots);
 	}
 }
 
@@ -453,7 +453,7 @@ void UWiiRemoteManager::OnNunchukConnected(WiiRemote* wiiRemote)
 	UE_LOG(WiiRemotePluginLog, Log, TEXT("WiiRemote %d Nunchuk has connected."), IdentifyWiiRemote(wiiRemote->UniqueID));
 	Data[index].IsConnectNunchuk = true;
 	if (WiiRemoteDelegate)
-		WiiRemoteDelegate->OnNunchukConnected(wiiRemote->UniqueID);
+		WiiRemoteDelegate->OnNunchukConnectedFunction(IdentifyWiiRemote(wiiRemote->UniqueID));
 }
 
 void UWiiRemoteManager::OnNunchukButtonsChanged(WiiRemote* wiiRemote, FWiiRemoteNunchukButtons buttons)
@@ -472,7 +472,7 @@ void UWiiRemoteManager::OnNunchukButtonsChanged(WiiRemote* wiiRemote, FWiiRemote
 			UpdateButtons(dataButtons.IsPushZ, buttons.IsPushZ, EWiiRemoteNunchukKeys::Z, index);
 		}
 		Data[index].NunchukButtons = buttons;
-		WiiRemoteDelegate->OnNunchukButtonsChanged(wiiRemote->UniqueID, Data[index].NunchukButtons);
+		WiiRemoteDelegate->OnNunchukButtonsChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), Data[index].NunchukButtons);
 	}
 }
 
@@ -492,7 +492,7 @@ void UWiiRemoteManager::OnNunchukAccelChanged(WiiRemote* wiiRemote, FVector acce
 			EmitAnalogInputEventForKey(EWiiRemoteNunchukKeys::AccelerationY, Data[index].NunchukAcceleration.Y, index);
 			EmitAnalogInputEventForKey(EWiiRemoteNunchukKeys::AccelerationZ, Data[index].NunchukAcceleration.Z, index);
 		}
-		WiiRemoteDelegate->OnNunchukAccelChanged(wiiRemote->UniqueID, Data[index].NunchukAcceleration);
+		WiiRemoteDelegate->OnNunchukAccelChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), Data[index].NunchukAcceleration);
 	}
 }
 
@@ -512,7 +512,7 @@ void UWiiRemoteManager::OnNunchukOrientationChanged(WiiRemote* wiiRemote, float 
 			EmitAnalogInputEventForKey(EWiiRemoteNunchukKeys::OrientationPitch, Data[index].NunchukOrientationPitch, index);
 			EmitAnalogInputEventForKey(EWiiRemoteNunchukKeys::OrientationRoll, Data[index].NunchukOrientationRoll, index);
 		}
-		WiiRemoteDelegate->OnNunchukOrientationChanged(wiiRemote->UniqueID, Data[index].NunchukOrientationPitch, Data[index].NunchukOrientationRoll);
+		WiiRemoteDelegate->OnNunchukOrientationChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), Data[index].NunchukOrientationPitch, Data[index].NunchukOrientationRoll);
 	}
 }
 
@@ -532,7 +532,7 @@ void UWiiRemoteManager::OnNunchukJoystickChanged(WiiRemote* wiiRemote, float x, 
 			EmitAnalogInputEventForKey(EWiiRemoteNunchukKeys::JoystickX, Data[index].NunchukJoystickX, index);
 			EmitAnalogInputEventForKey(EWiiRemoteNunchukKeys::JoystickY, Data[index].NunchukJoystickY, index);
 		}
-		WiiRemoteDelegate->OnNunchukJoystickChanged(wiiRemote->UniqueID, Data[index].NunchukJoystickX, Data[index].NunchukJoystickY);
+		WiiRemoteDelegate->OnNunchukJoystickChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), Data[index].NunchukJoystickX, Data[index].NunchukJoystickY);
 	}
 }
 
@@ -544,7 +544,7 @@ void UWiiRemoteManager::OnClassicConnected(WiiRemote* wiiRemote)
 	UE_LOG(WiiRemotePluginLog, Log, TEXT("WiiRemote %d ClassicController has connected."), IdentifyWiiRemote(wiiRemote->UniqueID));
 	Data[index].IsConnectClassicController = true;
 	if (WiiRemoteDelegate)
-		WiiRemoteDelegate->OnClassicConnected(wiiRemote->UniqueID);
+		WiiRemoteDelegate->OnClassicConnectedFunction(IdentifyWiiRemote(wiiRemote->UniqueID));
 }
 
 void UWiiRemoteManager::OnClassicButtonsChanged(WiiRemote* wiiRemote, FWiiRemoteClassicControllerButtons buttons)
@@ -576,7 +576,7 @@ void UWiiRemoteManager::OnClassicButtonsChanged(WiiRemote* wiiRemote, FWiiRemote
 			UpdateButtons(dataButtons.IsPushZR, buttons.IsPushZR, EWiiRemoteClassicControllerKeys::ZR, index);
 		}
 		Data[index].ClassicControllerButtons = buttons;
-		WiiRemoteDelegate->OnClassicButtonsChanged(wiiRemote->UniqueID, Data[index].ClassicControllerButtons);
+		WiiRemoteDelegate->OnClassicButtonsChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), Data[index].ClassicControllerButtons);
 	}
 }
 
@@ -596,7 +596,7 @@ void UWiiRemoteManager::OnClassicJoystickLChanged(WiiRemote* wiiRemote, float x,
 			EmitAnalogInputEventForKey(EWiiRemoteClassicControllerKeys::LeftJoystickX, Data[index].ClassicControllerLeftJoystickX, index);
 			EmitAnalogInputEventForKey(EWiiRemoteClassicControllerKeys::LeftJoystickY, Data[index].ClassicControllerLeftJoystickY, index);
 		}
-		WiiRemoteDelegate->OnClassicJoystickLChanged(wiiRemote->UniqueID, Data[index].ClassicControllerLeftJoystickX, Data[index].ClassicControllerLeftJoystickY);
+		WiiRemoteDelegate->OnClassicJoystickLChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), Data[index].ClassicControllerLeftJoystickX, Data[index].ClassicControllerLeftJoystickY);
 	}
 }
 
@@ -616,7 +616,7 @@ void UWiiRemoteManager::OnClassicJoystickRChanged(WiiRemote* wiiRemote, float x,
 			EmitAnalogInputEventForKey(EWiiRemoteClassicControllerKeys::RightJoystickX, Data[index].ClassicControllerRightJoystickX, index);
 			EmitAnalogInputEventForKey(EWiiRemoteClassicControllerKeys::RightJoystickY, Data[index].ClassicControllerRightJoystickY, index);
 		}
-		WiiRemoteDelegate->OnClassicJoystickRChanged(wiiRemote->UniqueID, Data[index].ClassicControllerRightJoystickX, Data[index].ClassicControllerRightJoystickY);
+		WiiRemoteDelegate->OnClassicJoystickRChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), Data[index].ClassicControllerRightJoystickX, Data[index].ClassicControllerRightJoystickY);
 	}
 }
 
@@ -636,7 +636,7 @@ void UWiiRemoteManager::OnClassicTriggersChanged(WiiRemote* wiiRemote, float lef
 			EmitAnalogInputEventForKey(EWiiRemoteClassicControllerKeys::LeftTrigger, Data[index].ClassicControllerLeftTrigger, index);
 			EmitAnalogInputEventForKey(EWiiRemoteClassicControllerKeys::RightTrigger, Data[index].ClassicControllerRightTrigger, index);
 		}
-		WiiRemoteDelegate->OnClassicTriggersChanged(wiiRemote->UniqueID, Data[index].ClassicControllerLeftTrigger, Data[index].ClassicControllerRightTrigger);
+		WiiRemoteDelegate->OnClassicTriggersChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), Data[index].ClassicControllerLeftTrigger, Data[index].ClassicControllerRightTrigger);
 	}
 }
 
@@ -648,7 +648,7 @@ void UWiiRemoteManager::OnBalanceConnected(WiiRemote* wiiRemote)
 	UE_LOG(WiiRemotePluginLog, Log, TEXT("WiiRemote %d BalanceBoard has connected."), IdentifyWiiRemote(wiiRemote->UniqueID));
 	Data[index].IsConnectBalanceBoard = true;
 	if (WiiRemoteDelegate)
-		WiiRemoteDelegate->OnBalanceConnected(wiiRemote->UniqueID);
+		WiiRemoteDelegate->OnBalanceConnectedFunction(IdentifyWiiRemote(wiiRemote->UniqueID));
 }
 
 void UWiiRemoteManager::OnBalanceWeightChanged(WiiRemote* wiiRemote, FWiiRemoteBalanceBoard balanceBoard)
@@ -679,7 +679,7 @@ void UWiiRemoteManager::OnBalanceWeightChanged(WiiRemote* wiiRemote, FWiiRemoteB
 			EmitAnalogInputEventForKey(EWiiRemoteBalanceBoardKeys::Pounds_TopR, Data[index].BalanceBoard.Pounds.TopR, index);
 			EmitAnalogInputEventForKey(EWiiRemoteBalanceBoardKeys::Pounds_Total, Data[index].BalanceBoard.Pounds.Total, index);
 		}
-		WiiRemoteDelegate->OnBalanceWeightChanged(wiiRemote->UniqueID, Data[index].BalanceBoard);
+		WiiRemoteDelegate->OnBalanceWeightChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), Data[index].BalanceBoard);
 	}
 }
 
@@ -692,7 +692,7 @@ void UWiiRemoteManager::OnMotionPlusDetected(WiiRemote* wiiRemote)
 	Data[index].IsConnectMotionPlus = true;
 	wiiRemote->EnableMotionPlus();
 	if (WiiRemoteDelegate)
-		WiiRemoteDelegate->OnMotionPlusDetected(wiiRemote->UniqueID);
+		WiiRemoteDelegate->OnMotionPlusDetectedFunction(IdentifyWiiRemote(wiiRemote->UniqueID));
 }
 
 void UWiiRemoteManager::OnMotionPlusEnabled(WiiRemote* wiiRemote)
@@ -702,7 +702,7 @@ void UWiiRemoteManager::OnMotionPlusEnabled(WiiRemote* wiiRemote)
 		return;
 	UE_LOG(WiiRemotePluginLog, Log, TEXT("WiiRemote %d MotionPlus is enabled."), IdentifyWiiRemote(wiiRemote->UniqueID));
 	if (WiiRemoteDelegate)
-		WiiRemoteDelegate->OnMotionPlusEnabled(wiiRemote->UniqueID);
+		WiiRemoteDelegate->OnMotionPlusEnabledFunction(IdentifyWiiRemote(wiiRemote->UniqueID));
 }
 
 void UWiiRemoteManager::OnMotionPlusSpeedChanged(WiiRemote* wiiRemote, FRotator speed)
@@ -721,7 +721,7 @@ void UWiiRemoteManager::OnMotionPlusSpeedChanged(WiiRemote* wiiRemote, FRotator 
 			EmitAnalogInputEventForKey(EWiiRemoteMotionPlusKeys::SpeedOrientationYaw, Data[index].MotionPlusSpeed.Yaw, index);
 			EmitAnalogInputEventForKey(EWiiRemoteMotionPlusKeys::SpeedOrientationRoll, Data[index].MotionPlusSpeed.Roll, index);
 		}
-		WiiRemoteDelegate->OnMotionPlusSpeedChanged(wiiRemote->UniqueID, Data[index].MotionPlusSpeed);
+		WiiRemoteDelegate->OnMotionPlusSpeedChangedFunction(IdentifyWiiRemote(wiiRemote->UniqueID), Data[index].MotionPlusSpeed);
 	}
 }
 
@@ -734,7 +734,7 @@ void UWiiRemoteManager::OnMotionPlusExtensionConnected(WiiRemote* wiiRemote)
 	Data[index].IsConnectMotionPlus = true;
 	wiiRemote->EnableMotionPlus();
 	if (WiiRemoteDelegate)
-		WiiRemoteDelegate->OnMotionPlusExtensionConnected(wiiRemote->UniqueID);
+		WiiRemoteDelegate->OnMotionPlusExtensionConnectedFunction(IdentifyWiiRemote(wiiRemote->UniqueID));
 }
 
 void UWiiRemoteManager::OnMotionPlusExtensionDisconnected(WiiRemote* wiiRemote)
@@ -746,7 +746,7 @@ void UWiiRemoteManager::OnMotionPlusExtensionDisconnected(WiiRemote* wiiRemote)
 	Data[index].IsConnectMotionPlus = true;
 	wiiRemote->EnableMotionPlus();
 	if (WiiRemoteDelegate)
-		WiiRemoteDelegate->OnMotionPlusExtensionDisconnected(wiiRemote->UniqueID);
+		WiiRemoteDelegate->OnMotionPlusExtensionDisconnectedFunction(IdentifyWiiRemote(wiiRemote->UniqueID));
 }
 
 void UWiiRemoteManager::OnExtensionDisconnected(WiiRemote* wiiRemote)
@@ -762,7 +762,7 @@ void UWiiRemoteManager::OnExtensionDisconnected(WiiRemote* wiiRemote)
 	Data[index].IsConnectMotionPlus = false;
 	Data[index].IsConnectNunchuk = false;
 	if (WiiRemoteDelegate)
-		WiiRemoteDelegate->OnExtensionDisconnected(wiiRemote->UniqueID);
+		WiiRemoteDelegate->OnExtensionDisconnectedFunction(IdentifyWiiRemote(wiiRemote->UniqueID));
 }
 
 void OnStateChanged(WiiRemote& wiiRemote, StateChangeFlags changed, const WiiRemoteState& newState)

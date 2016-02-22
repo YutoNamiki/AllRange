@@ -1,22 +1,22 @@
 #pragma once
 
 #include "GameFramework/PlayerController.h"
-#include "MyoDelegateBlueprint.h"
 #include "MyoInterface.h"
 #include "MyoPlayerController.generated.h"
 
+class UMyoComponent;
+class UMyoController;
 enum class MyoLockingPolicy : uint8;
 
 UCLASS()
-class AMyoPlayerController : public APlayerController, public IMyoDelegateBlueprint, public IMyoInterface
+class AMyoPlayerController : public APlayerController, public IMyoInterface
 {
 	GENERATED_BODY()
 
 public:
+	UMyoComponent* MyoComponent;
+
 	AMyoPlayerController(const FObjectInitializer& PCIP);
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = MyoFunctions)
 	bool IsHubEnabled();

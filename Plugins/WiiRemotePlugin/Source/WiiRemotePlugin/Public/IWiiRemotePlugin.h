@@ -7,6 +7,7 @@
 class IWiiRemoteDelegate;
 struct FWiiRemoteDeviceData;
 struct FWiiRemoteSample;
+enum class ReportType : uint8;
 enum class WiiRemoteSpeakerFrequency : uint8;
 enum class WiiRemoteLED : uint8;
 
@@ -28,6 +29,7 @@ public:
 	virtual void SetDelegate(IWiiRemoteDelegate* newDelegate) { }
 	virtual void RemoveDelgate() { }
 	virtual void Tick(float deltaTime) { }
+	virtual void SetReportType(int32 playerIndex, ReportType reportType) { }
 	virtual void SetLED(int32 playerIndex, WiiRemoteLED ledBits) { }
 	virtual void SetRumble(int32 playerIndex, bool on) { }
 	virtual void SetRumbleForAsync(int32 playerIndex, int32 milliseconds) { }

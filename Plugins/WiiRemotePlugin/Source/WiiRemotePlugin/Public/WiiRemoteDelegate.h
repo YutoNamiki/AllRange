@@ -4,6 +4,19 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(WiiRemotePluginLog, Log, All);
 
+class UWiiRemoteController;
+
+UENUM(BlueprintType)
+enum class ReportType : uint8
+{
+	Buttons							UMETA(DisplayName = "Buttons"),
+	ButtonsAcceleration				UMETA(DisplayName = "ButtonsAcceleration"),
+	ButtonsAccelerationIR			UMETA(DisplayName = "ButtonsAccelerationIR"),
+	ButtonsAccelerationExtension	UMETA(DisplayName = "ButtonsAccelerationExtension"),
+	ButtonsAccelerationIRExtension	UMETA(DisplayName = "ButtonsAccelerationIRExtension"),
+	ButtonsBalanceBoard				UMETA(DisplayName = "ButtonsBalanceBoard")
+};
+
 UENUM(BlueprintType)
 enum class WiiRemoteSpeakerFrequency : uint8
 {
@@ -235,6 +248,34 @@ struct FWiiRemoteSample
 	WiiRemoteSpeakerFrequency Frequency = WiiRemoteSpeakerFrequency::FreqNone;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FConnectedSignature, UWiiRemoteController*, WiiRemote);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FConnectionLostSignature, UWiiRemoteController*, WiiRemote);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBatteryChangedSignature, UWiiRemoteController*, WiiRemote, int32, BatteryPercent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBatteryDrainedSignature, UWiiRemoteController*, WiiRemote);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FLEDsChangedSignature, UWiiRemoteController*, WiiRemote, WiiRemoteLED, LED);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FButtonsChangedSignature, UWiiRemoteController*, WiiRemote, FWiiRemoteButtons, Buttons);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAccelChangedSignature, UWiiRemoteController*, WiiRemote, FVector, Accel);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOrientationChangedSignature, UWiiRemoteController*, WiiRemote, float, Pitch, float, Roll);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FIRChangedSignature, UWiiRemoteController*, WiiRemote, TArray<FWiiRemoteDot>, Dot);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNunchukConnectedSignature, UWiiRemoteController*, WiiRemote);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FNunchukButtonsChangedSignature, UWiiRemoteController*, WiiRemote, FWiiRemoteNunchukButtons, Buttons);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FNunchukAccelChangedSignature, UWiiRemoteController*, WiiRemote, FVector, Accel);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FNunchukOrientationChangedSignature, UWiiRemoteController*, WiiRemote, float, Pitch, float, Roll);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FNunchukJoystickChangedSignature, UWiiRemoteController*, WiiRemote, float, X, float, Y);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FClassicConnectedSignature, UWiiRemoteController*, WiiRemote);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FClassicButtonsChangedSignature, UWiiRemoteController*, WiiRemote, FWiiRemoteClassicControllerButtons, Buttons);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FClassicJoystickLChangedSignature, UWiiRemoteController*, WiiRemote, float, X, float, Y);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FClassicJoystickRChangedSignature, UWiiRemoteController*, WiiRemote, float, X, float, Y);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FClassicTriggersChangedSignature, UWiiRemoteController*, WiiRemote, float, Left, float, Right);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBalanceConnectedSignature, UWiiRemoteController*, WiiRemote);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBalanceWeightChangedSignature, UWiiRemoteController*, WiiRemote, FWiiRemoteBalanceBoard, BalanceBoard);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMotionPlusDetectedSignature, UWiiRemoteController*, WiiRemote);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMotionPlusEnabledSignature, UWiiRemoteController*, WiiRemote);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMotionPlusSpeedChangedSignature, UWiiRemoteController*, WiiRemote, FRotator, Speed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMotionPlusExtensionConnectedSignature, UWiiRemoteController*, WiiRemote);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMotionPlusExtensionDisconnectedSignature, UWiiRemoteController*, WiiRemote);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FExtensionDisconnectedSignature, UWiiRemoteController*, WiiRemote);
+
 UINTERFACE(MinimalAPI)
 class UWiiRemoteDelegate : public UInterface
 {
@@ -245,33 +286,43 @@ class IWiiRemoteDelegate
 {
 	GENERATED_IINTERFACE_BODY()
 
-	virtual void OnConnected(int32 wiiRemoteId);
-	virtual void OnCennectionLost(int32 wiiRemoteId);
-	virtual void OnBatteryChanged(int32 wiiRemoteId, int32 batteryPercent);
-	virtual void OnBatteryDrained(int32 wiiRemoteId);
-	virtual void OnLEDsChanged(int32 wiiRemoteId, WiiRemoteLED led);
-	virtual void OnButtonsChanged(int32 wiiRemoteId, FWiiRemoteButtons buttons);
-	virtual void OnAccelChanged(int32 wiiRemoteId, FVector accel);
-	virtual void OnOrientationChanged(int32 wiiRemoteId, float pitch, float roll);
-	virtual void OnIRChanged(int32 wiiRemoteId, TArray<FWiiRemoteDot> dots);
-	virtual void OnNunchukConnected(int32 wiiRemoteId);
-	virtual void OnNunchukButtonsChanged(int32 wiiRemoteId, FWiiRemoteNunchukButtons buttons);
-	virtual void OnNunchukAccelChanged(int32 wiiRemoteId, FVector accel);
-	virtual void OnNunchukOrientationChanged(int32 wiiRemoteId, float pitch, float roll);
-	virtual void OnNunchukJoystickChanged(int32 wiiRemoteId, float x, float y);
-	virtual void OnClassicConnected(int32 wiiRemoteId);
-	virtual void OnClassicButtonsChanged(int32 wiiRemoteId, FWiiRemoteClassicControllerButtons buttons);
-	virtual void OnClassicJoystickLChanged(int32 wiiRemoteId, float x, float y);
-	virtual void OnClassicJoystickRChanged(int32 wiiRemoteId, float x, float y);
-	virtual void OnClassicTriggersChanged(int32 wiiRemoteId, float left, float right);
-	virtual void OnBalanceConnected(int32 wiiRemoteId);
-	virtual void OnBalanceWeightChanged(int32 wiiRemoteId, FWiiRemoteBalanceBoard balanceBoard);
-	virtual void OnMotionPlusDetected(int32 wiiRemoteId);
-	virtual void OnMotionPlusEnabled(int32 wiiRemoteId);
-	virtual void OnMotionPlusSpeedChanged(int32 wiiRemoteId, FRotator speed);
-	virtual void OnMotionPlusExtensionConnected(int32 wiiRemoteId);
-	virtual void OnMotionPlusExtensionDisconnected(int32 wiiRemoteId);
-	virtual void OnExtensionDisconnected(int32 wiiRemoteId);
+public:
+	UObject* ValidSelfPointer;
+	UObject* InterfaceDelegate;
+	TArray<UWiiRemoteController*> LatestFrame;
+
+	void SetInterfaceDelegate(UObject* newDelegate);
+	bool IsValidDelegate();
+	UWiiRemoteController* InternalAddController(int32 newId);
+	UWiiRemoteController* InternalControllerForId(int32 newId);
+	virtual void OnConnectedFunction(int32 wiiRemoteId);
+	virtual void OnConnectionLostFunction(int32 wiiRemoteId);
+	virtual void OnBatteryChangedFunction(int32 wiiRemoteId, int32 batteryPercent);
+	virtual void OnBatteryDrainedFunction(int32 wiiRemoteId);
+	virtual void OnLEDsChangedFunction(int32 wiiRemoteId, WiiRemoteLED led);
+	virtual void OnButtonsChangedFunction(int32 wiiRemoteId, FWiiRemoteButtons buttons);
+	virtual void OnAccelChangedFunction(int32 wiiRemoteId, FVector accel);
+	virtual void OnOrientationChangedFunction(int32 wiiRemoteId, float pitch, float roll);
+	virtual void OnIRChangedFunction(int32 wiiRemoteId, TArray<FWiiRemoteDot> dots);
+	virtual void OnNunchukConnectedFunction(int32 wiiRemoteId);
+	virtual void OnNunchukButtonsChangedFunction(int32 wiiRemoteId, FWiiRemoteNunchukButtons buttons);
+	virtual void OnNunchukAccelChangedFunction(int32 wiiRemoteId, FVector accel);
+	virtual void OnNunchukOrientationChangedFunction(int32 wiiRemoteId, float pitch, float roll);
+	virtual void OnNunchukJoystickChangedFunction(int32 wiiRemoteId, float x, float y);
+	virtual void OnClassicConnectedFunction(int32 wiiRemoteId);
+	virtual void OnClassicButtonsChangedFunction(int32 wiiRemoteId, FWiiRemoteClassicControllerButtons buttons);
+	virtual void OnClassicJoystickLChangedFunction(int32 wiiRemoteId, float x, float y);
+	virtual void OnClassicJoystickRChangedFunction(int32 wiiRemoteId, float x, float y);
+	virtual void OnClassicTriggersChangedFunction(int32 wiiRemoteId, float left, float right);
+	virtual void OnBalanceConnectedFunction(int32 wiiRemoteId);
+	virtual void OnBalanceWeightChangedFunction(int32 wiiRemoteId, FWiiRemoteBalanceBoard balanceBoard);
+	virtual void OnMotionPlusDetectedFunction(int32 wiiRemoteId);
+	virtual void OnMotionPlusEnabledFunction(int32 wiiRemoteId);
+	virtual void OnMotionPlusSpeedChangedFunction(int32 wiiRemoteId, FRotator speed);
+	virtual void OnMotionPlusExtensionConnectedFunction(int32 wiiRemoteId);
+	virtual void OnMotionPlusExtensionDisconnectedFunction(int32 wiiRemoteId);
+	virtual void OnExtensionDisconnectedFunction(int32 wiiRemoteId);
+	virtual void SetReportType(int32 playerIndex, ReportType reportType);
 	virtual void SetLED(int32 playerIndex, WiiRemoteLED ledBits);
 	virtual void SetRumble(int32 playerIndex, bool on);
 	virtual void SetRumbleForAsync(int32 playerIndex, int32 milliseconds);

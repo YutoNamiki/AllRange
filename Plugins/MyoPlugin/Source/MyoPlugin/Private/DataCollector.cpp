@@ -265,7 +265,7 @@ void UDataCollector::OnConnect(uint64 myoId)
 	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnConnect_Begin"));
 	UE_LOG(MyoPluginLog, Log, TEXT("Myo %d  has connected."), IdentifyMyo(myoId));
 	if (MyoDelegate)
-		MyoDelegate->OnConnect(IdentifyMyo(myoId));
+		MyoDelegate->OnConnectFunction(IdentifyMyo(myoId));
 	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnConnect_End"));
 }
 
@@ -274,7 +274,7 @@ void UDataCollector::OnDisconnect(uint64 myoId)
 	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnDisconnect_Begin"));
 	UE_LOG(MyoPluginLog, Log, TEXT("Myo %d  has disconnected."), IdentifyMyo(myoId));
 	if (MyoDelegate)
-		MyoDelegate->OnDisconnect(IdentifyMyo(myoId));
+		MyoDelegate->OnDisconnectFunction(IdentifyMyo(myoId));
 	if (myoId == LastPairedMyo)
 		LastPairedMyo = LastValidMyo();
 	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnDisconnect_End"));
@@ -291,7 +291,7 @@ void UDataCollector::OnArmSync(uint64 myoId, MyoArm arm, MyoArmDirection xDirect
 	if (arm == MyoArm::Right)
 		RightMyo = myoIndex + 1;
 	if (MyoDelegate)
-		MyoDelegate->OnArmSync(IdentifyMyo(myoId), arm, xDirection);
+		MyoDelegate->OnArmSyncFunction(IdentifyMyo(myoId), arm, xDirection);
 	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnArmSync_End"));
 }
 
@@ -307,7 +307,7 @@ void UDataCollector::OnArmUnsync(uint64 myoId)
 	if (RightMyo == myoIndex + 1)
 		RightMyo = -1;
 	if (MyoDelegate)
-		MyoDelegate->OnArmUnsync(IdentifyMyo(myoId));
+		MyoDelegate->OnArmUnsyncFunction(IdentifyMyo(myoId));
 	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnArmUnsync_End"));
 }
 
@@ -325,7 +325,7 @@ void UDataCollector::OnPair(uint64 myoId)
 		Data.Add(data);
 	}
 	if (MyoDelegate != nullptr)
-		MyoDelegate->OnPair(IdentifyMyo(myoId));
+		MyoDelegate->OnPairFunction(IdentifyMyo(myoId));
 	LastPairedMyo = myoId;
 	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnPair_End"));
 }
@@ -335,7 +335,7 @@ void UDataCollector::OnUnpair(uint64 myoId)
 	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnUnpair_Begin"));
 	auto myoIndex = MyoIndexForMyo(myoId);
 	if (MyoDelegate != nullptr)
-		MyoDelegate->OnUnpair(IdentifyMyo(myoId));
+		MyoDelegate->OnUnpairFunction(IdentifyMyo(myoId));
 	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnUnpair_End"));
 }
 
@@ -351,8 +351,8 @@ void UDataCollector::OnOrientationData(uint64 myoId, FQuat& quat)
 	Data[myoIndex].ArmOrientation = ConvertOrientationToArmSpace(Data[myoIndex].Orientation, Data[myoIndex].ArmSpaceCorrection, Data[myoIndex].XDirection);
 	if (MyoDelegate)
 	{
-		MyoDelegate->OnOrientationData(myoIndex + 1, Data[myoIndex].Quaternion);
-		MyoDelegate->OnOrientationData(myoIndex + 1, Data[myoIndex].ArmOrientation);
+		MyoDelegate->OnOrientationDataFunction(myoIndex + 1, Data[myoIndex].Quaternion);
+		MyoDelegate->OnOrientationDataFunction(myoIndex + 1, Data[myoIndex].ArmOrientation);
 		if (MyoIsValidForInputMapping(myoId))
 		{
 			EmitAnalogInputEventForKey(EMyoKeys::OrientationPitch, Data[myoIndex].ArmOrientation.Pitch * OrientationScale.Pitch, 0);
@@ -375,8 +375,8 @@ void UDataCollector::OnAccelerometerData(uint64 myoId, FVector& accel)
 	Data[myoIndex].BodySpaceNullAcceleration = ConvertAccelerationToBodySpace(Data[myoIndex].ArmAcceleration, Data[myoIndex].Orientation, Data[myoIndex].ArmSpaceCorrection, Data[myoIndex].XDirection);
 	if (MyoDelegate)
 	{
-		MyoDelegate->OnAccelerometerData(myoIndex + 1, Data[myoIndex].Acceleration);
-		MyoDelegate->OnArmMoved(myoIndex + 1, Data[myoIndex].ArmAcceleration, Data[myoIndex].ArmOrientation, Data[myoIndex].ArmGyro, Data[myoIndex].Pose);																																		//InputMapping - only supports controller 1 for now
+		MyoDelegate->OnAccelerometerDataFunction(myoIndex + 1, Data[myoIndex].Acceleration);
+		MyoDelegate->OnArmMovedFunction(myoIndex + 1, Data[myoIndex].ArmAcceleration, Data[myoIndex].ArmOrientation, Data[myoIndex].ArmGyro, Data[myoIndex].Pose);																																		//InputMapping - only supports controller 1 for now
 		if (MyoIsValidForInputMapping(myoId))
 		{
 			EmitAnalogInputEventForKey(EMyoKeys::AccelerationX, Data[myoIndex].ArmAcceleration.X, 0);
@@ -397,7 +397,7 @@ void UDataCollector::OnGyroscopeData(uint64 myoId, FVector& gyro)
 	Data[myoIndex].ArmGyro = ConvertVectorToUE(Data[myoIndex].Gyro);
 	if (MyoDelegate)
 	{
-		MyoDelegate->OnGyroscopeData(myoIndex + 1, Data[myoIndex].Gyro);
+		MyoDelegate->OnGyroscopeDataFunction(myoIndex + 1, Data[myoIndex].Gyro);
 		if (MyoIsValidForInputMapping(myoId))
 		{
 			EmitAnalogInputEventForKey(EMyoKeys::GyroX, Data[myoIndex].ArmGyro.X * GyroScale, 0);
@@ -432,7 +432,7 @@ void UDataCollector::OnPose(uint64 myoId, MyoPose pose)
 	UE_LOG(MyoPluginLog, Log, TEXT("Myo %d switched to pose %s."), IdentifyMyo(myoId), *ConvertPoseToString(pose));
 	if (MyoDelegate)
 	{
-		MyoDelegate->OnPose(myoIndex + 1, pose);
+		MyoDelegate->OnPoseFunction(myoIndex + 1, pose);
 		if (MyoIsValidForInputMapping(myoId))
 		{
 			ReleasePose(LastPose);
@@ -451,7 +451,7 @@ void UDataCollector::OnEmgData(uint64 myoId, TArray<int8>& emg)
 	for (auto emgValue : emg)
 		data.Streams.Add(emgValue);
 	if (MyoDelegate)
-		MyoDelegate->OnEmgData(myoIndex + 1, data);
+		MyoDelegate->OnEmgDataFunction(myoIndex + 1, data);
 	UE_LOG(MyoPluginLog, Warning, TEXT("UDataCollector::OnEmgData_End"));
 }
 

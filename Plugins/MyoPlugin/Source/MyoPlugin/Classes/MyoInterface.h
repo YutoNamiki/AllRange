@@ -42,4 +42,5 @@ public:
 	void OnEmgData(UMyoController* myo, FMyoEmgData data);
 	UFUNCTION(BlueprintImplementableEvent, Category = MyoEvents)
 	void DeviceDisabled();
+
 };

@@ -30,6 +30,7 @@ IMPLEMENT_MODULE(FMyoPlugin, MyoPlugin )
 
 void FMyoPlugin::StartupModule()
 {
+	UE_LOG(MyoPluginLog, Warning, TEXT("Startup Myo Plugin Module."));
 	UE_LOG(MyoPluginLog, Log, TEXT("Using Myo Plugin version %s"), *PluginVersion);
 	collector = NewObject<UDataCollector>();
 	EKeys::AddKey(FKeyDetails(EMyoKeys::PoseRest, LOCTEXT("MyoPoseRest", "Myo Pose Rest"), FKeyDetails::GamepadKey, FName("MyoArmband")));
@@ -64,8 +65,6 @@ void FMyoPlugin::SetDelegate(IMyoDelegate* newDelegate)
 		collector->MyoDelegate->MyoDisabled();
 		UE_LOG(MyoPluginLog, Warning, TEXT("Myo is Disabled."));
 	}
-	//else
-	//	collector->SetLockingPolicy(myo::Hub::lockingPolicyNone);
 	UE_LOG(MyoPluginLog, Log, TEXT("Myo Delegate Set (should only be called once per begin play or you have duplicates)."));
 }
 

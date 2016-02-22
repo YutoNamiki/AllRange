@@ -1,13 +1,12 @@
 #pragma once
 
 #include "MyoDelegate.h"
-#include "MyoDelegateBlueprint.h"
 #include "MyoController.generated.h"
 
 UCLASS(BlueprintType)
 class MYOPLUGIN_API UMyoController : public UObject
 {
-	friend class IMyoDelegateBlueprint;
+	friend class IMyoDelegate;
 
 	GENERATED_BODY()
 

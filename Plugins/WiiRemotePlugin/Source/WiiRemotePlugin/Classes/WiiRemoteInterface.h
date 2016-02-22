@@ -19,7 +19,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = WiiRemoteEvents)
 	void OnConnected(UWiiRemoteController* wiiRemote);
 	UFUNCTION(BlueprintImplementableEvent, Category = WiiRemoteEvents)
-	void OnCennectionLost(UWiiRemoteController* wiiRemote);
+	void OnConnectionLost(UWiiRemoteController* wiiRemote);
 	UFUNCTION(BlueprintImplementableEvent, Category = WiiRemoteEvents)
 	void OnBatteryChanged(UWiiRemoteController* wiiRemote, int32 batteryPercent);
 	UFUNCTION(BlueprintImplementableEvent, Category = WiiRemoteEvents)
